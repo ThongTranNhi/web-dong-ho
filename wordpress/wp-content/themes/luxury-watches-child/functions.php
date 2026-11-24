@@ -2,6 +2,7 @@
 
 require_once get_stylesheet_directory() . '/inc/seo.php';
 require_once get_stylesheet_directory() . '/inc/brand-catalog.php';
+require_once get_stylesheet_directory() . '/inc/storefront-experience.php';
 require_once get_stylesheet_directory() . '/inc/watch-angle-galleries.php';
 
 add_action('wp_head', function () {
@@ -27,13 +28,7 @@ add_filter('nav_menu_link_attributes', function ($attributes) {
 });
 
 add_action('wp_enqueue_scripts', function () {
-    wp_enqueue_style(
-        'luxury-google-fonts',
-        'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
-        [],
-        null
-    );
-    wp_enqueue_style('storefront-parent', get_template_directory_uri() . '/style.css', ['luxury-google-fonts'], wp_get_theme('storefront')->get('Version'));
+    wp_enqueue_style('storefront-parent', get_template_directory_uri() . '/style.css', [], wp_get_theme('storefront')->get('Version'));
     wp_enqueue_style('luxury-watches', get_stylesheet_uri(), ['storefront-parent'], filemtime(get_stylesheet_directory() . '/style.css'));
     $motion_css = get_stylesheet_directory() . '/assets/motion.css';
     $motion_js = get_stylesheet_directory() . '/assets/motion.js';
@@ -85,14 +80,14 @@ add_filter('body_class', function ($classes) {
     if (is_page('gioi-thieu')) {
         $classes[] = 'lw-about-page';
     }
-    if (is_page(['huong-dan-mua-hang', 'huong-dan-dau-gia', 'chinh-sach-doi-tra', 'chinh-sach-van-chuyen', 'chinh-sach-bao-mat', 'cau-hoi-thuong-gap'])) {
+    if (is_page(['huong-dan-mua-hang', 'huong-dan-dau-gia', 'chinh-sach-bao-hanh', 'chinh-sach-doi-tra', 'chinh-sach-van-chuyen', 'chinh-sach-bao-mat', 'cau-hoi-thuong-gap'])) {
         $classes[] = 'lw-information-page';
     }
     return $classes;
 });
 
 add_action('wp', function () {
-    $information_pages = ['gioi-thieu', 'huong-dan-mua-hang', 'huong-dan-dau-gia', 'chinh-sach-doi-tra', 'chinh-sach-van-chuyen', 'chinh-sach-bao-mat', 'cau-hoi-thuong-gap'];
+    $information_pages = ['gioi-thieu', 'huong-dan-mua-hang', 'huong-dan-dau-gia', 'chinh-sach-bao-hanh', 'chinh-sach-doi-tra', 'chinh-sach-van-chuyen', 'chinh-sach-bao-mat', 'cau-hoi-thuong-gap', 'dau-gia'];
     if (is_front_page() || is_shop() || is_product_category() || is_page($information_pages) || is_singular('watch_auction') || is_post_type_archive('watch_auction')) {
         remove_action('storefront_sidebar', 'storefront_get_sidebar', 10);
     }

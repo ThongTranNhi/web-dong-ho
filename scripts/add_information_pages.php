@@ -26,6 +26,18 @@ HTML,
 </div>
 HTML,
     ],
+    'chinh-sach-bao-hanh' => [
+        'title' => 'Chính sách bảo hành',
+        'excerpt' => 'Thông tin cần chuẩn bị và các bước gửi yêu cầu bảo hành đồng hồ.',
+        'content' => <<<'HTML'
+<div class="lw-info-page">
+  <section class="lw-info-hero"><p class="lw-eyebrow">Hỗ trợ sau mua</p><h2>Kiểm tra thông tin bảo hành theo từng sản phẩm.</h2><p>Thời hạn, phạm vi và đơn vị bảo hành được xác định theo thông tin sản phẩm, phiếu bảo hành hoặc xác nhận của cửa hàng khi mua hàng.</p></section>
+  <section><h2>Thông tin cần chuẩn bị</h2><div class="lw-info-grid"><article><h3>Thông tin mua hàng</h3><p>Chuẩn bị mã đơn hàng, tên mẫu đồng hồ và phiếu bảo hành nếu có.</p></article><article><h3>Tình trạng sản phẩm</h3><p>Mô tả dấu hiệu bất thường, thời điểm phát hiện và gửi hình ảnh hoặc video để hỗ trợ việc kiểm tra.</p></article><article><h3>Điều kiện áp dụng</h3><p>Đối chiếu thời hạn và phạm vi bảo hành trên tài liệu đi kèm sản phẩm. Liên hệ cửa hàng nếu cần xác nhận thêm.</p></article></div></section>
+  <section><h2>Các bước gửi yêu cầu</h2><div class="lw-info-steps"><article><span>01</span><h3>Liên hệ cửa hàng</h3><p>Gửi thông tin đơn hàng và mô tả tình trạng qua trang Liên hệ.</p></article><article><span>02</span><h3>Xác nhận cách tiếp nhận</h3><p>Trao đổi với cửa hàng về nơi gửi và cách đóng gói trước khi bàn giao đồng hồ.</p></article><article><span>03</span><h3>Kiểm tra phương án</h3><p>Xác nhận phạm vi bảo hành, thời gian dự kiến và chi phí nếu có trước khi đồng ý xử lý.</p></article><article><span>04</span><h3>Nhận lại sản phẩm</h3><p>Kiểm tra tình trạng đồng hồ và lưu thông tin xử lý để theo dõi về sau.</p></article></div></section>
+  <aside class="lw-info-note"><strong>Sản phẩm đấu giá</strong><p>Kiểm tra thông tin bảo hành trong mô tả của từng phiên và tài liệu đi kèm sản phẩm trước khi đặt giá.</p></aside>
+</div>
+HTML,
+    ],
     'chinh-sach-doi-tra' => [
         'title' => 'Chính sách đổi trả',
         'excerpt' => 'Điều kiện tiếp nhận và quy trình xử lý yêu cầu đổi trả sản phẩm.',

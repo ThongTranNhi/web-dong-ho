@@ -40,6 +40,8 @@
 !/wordpress/wp-content/plugins/luxury-auctions/**
 !/wordpress/wp-content/plugins/ai-content-guard/
 !/wordpress/wp-content/plugins/ai-content-guard/**
+!/wordpress/wp-content/plugins/luxury-chatbox/
+!/wordpress/wp-content/plugins/luxury-chatbox/**
 
 # Media used by products and articles. Runtime logs and analytics stay ignored.
 !/wordpress/wp-content/uploads/

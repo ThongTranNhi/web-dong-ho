@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Luxury Watches Auctions
  * Description: Phiên đấu giá đồng hồ với lịch mở/đóng, bước giá, lịch sử và kiểm soát trả giá đồng thời.
- * Version: 2.1.0
+ * Version: 2.2.0
  * Author: Luxury Watches
  * Text Domain: luxury-auctions
  */
@@ -10,7 +10,7 @@
 if (!defined('ABSPATH')) exit;
 
 final class Luxury_Watches_Auctions {
-    const VERSION = '2.1.0';
+    const VERSION = '2.2.0';
 
     public static function init() {
         add_action('init', [__CLASS__, 'register_post_type']);
@@ -92,26 +92,98 @@ final class Luxury_Watches_Auctions {
     }
 
     public static function save_meta($post_id) {
-        if (!isset($_POST['luxury_auction_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['luxury_auction_nonce'])), 'luxury_auction_save')) return;
+        if (!isset($_POST['luxury_auction_nonce']) || !is_string($_POST['luxury_auction_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['luxury_auction_nonce'])), 'luxury_auction_save')) return;
         if (!current_user_can('edit_post', $post_id) || wp_is_post_revision($post_id)) return;
-        foreach (['_lw_product_id', '_lw_retail_price', '_lw_start_price', '_lw_bid_increment', '_lw_reserve_price'] as $key) {
-            if (isset($_POST[$key])) update_post_meta($post_id, $key, max(0, absint(wp_unslash($_POST[$key]))));
+        $settings = self::validate_settings(wp_unslash($_POST), $post_id);
+        if (is_wp_error($settings)) { self::settings_error($settings->get_error_message()); return; }
+        self::store_settings($post_id, $settings);
+    }
+
+    public static function validate_settings(array $input, $post_id = 0) {
+        $numeric = ['_lw_product_id', '_lw_retail_price', '_lw_start_price', '_lw_bid_increment', '_lw_reserve_price'];
+        $text = ['_lw_lot_number', '_lw_gender', '_lw_condition', '_lw_start_at', '_lw_end_at'];
+        $settings = [];
+        foreach (array_merge($numeric, $text) as $key) {
+            $value = $input[$key] ?? ($post_id ? get_post_meta($post_id, $key, true) : '');
+            if (!is_scalar($value)) return new WP_Error('invalid_settings', 'Thiết lập phiên chứa dữ liệu không hợp lệ.');
+            $settings[$key] = sanitize_text_field((string) $value);
         }
-        foreach (['_lw_lot_number', '_lw_gender', '_lw_condition', '_lw_start_at', '_lw_end_at'] as $key) {
-            if (isset($_POST[$key])) update_post_meta($post_id, $key, sanitize_text_field(wp_unslash($_POST[$key])));
+        foreach ($numeric as $key) {
+            $value = $settings[$key];
+            if ($value === '' && in_array($key, ['_lw_retail_price', '_lw_reserve_price'], true)) $value = '0';
+            if ($value !== '0' && self::parse_amount($value) === false) {
+                return new WP_Error('invalid_number', 'Giá và ID sản phẩm phải là số nguyên không âm hợp lệ.');
+            }
+            $settings[$key] = (int) $value;
         }
+        $start = self::timestamp($settings['_lw_start_at']);
+        $end = self::timestamp($settings['_lw_end_at']);
+        if (!$start || !$end || $end <= $start || $settings['_lw_start_price'] <= 0 || $settings['_lw_bid_increment'] <= 0) {
+            return new WP_Error('invalid_schedule', 'Cần giá khởi điểm và bước giá lớn hơn 0, giờ kết thúc phải sau giờ bắt đầu.');
+        }
+        if (!function_exists('wc_get_product') || !wc_get_product($settings['_lw_product_id'])) {
+            return new WP_Error('invalid_product', 'Cần chọn sản phẩm WooCommerce đang tồn tại.');
+        }
+        return $settings;
+    }
+
+    private static function store_settings($post_id, array $settings) {
+        global $wpdb;
+        if ($wpdb->query('START TRANSACTION') === false) { self::settings_error('Không thể lưu thiết lập phiên.'); return; }
+        try {
+            $locked = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE ID = %d FOR UPDATE", $post_id));
+            if (!$locked || $wpdb->last_error) { self::settings_error('Không thể khóa phiên để lưu thiết lập.'); return; }
+            clean_post_cache($post_id);
+            $summary = self::bid_summary($post_id);
+            if ($wpdb->last_error) { self::settings_error('Không thể kiểm tra lịch sử trả giá.'); return; }
+            $protected = ['_lw_product_id', '_lw_start_price', '_lw_bid_increment', '_lw_reserve_price', '_lw_start_at', '_lw_end_at'];
+            if ($summary['count'] > 0 || get_post_meta($post_id, '_lw_auction_result', true)) {
+                foreach ($protected as $key) {
+                    if ((string) $settings[$key] !== (string) get_post_meta($post_id, $key, true)) {
+                        self::settings_error('Phiên đã có lượt trả giá hoặc kết quả. Sản phẩm, quy tắc giá và lịch phiên đã được khóa.');
+                        return;
+                    }
+                }
+            }
+            foreach ($settings as $key => $value) {
+                if ((string) get_post_meta($post_id, $key, true) === (string) $value) continue;
+                if (!update_post_meta($post_id, $key, $value)) { self::settings_error('Không thể lưu thiết lập phiên.'); return; }
+            }
+            if ($wpdb->query('COMMIT') === false) self::settings_error('Không thể hoàn tất lưu thiết lập phiên.');
+        } finally {
+            $wpdb->query('ROLLBACK');
+            clean_post_cache($post_id);
+        }
+    }
+
+    private static function settings_error($message) {
+        set_transient('lw_auction_notice_' . get_current_user_id(), [
+            'error' => true,
+            'message' => 'Thiết lập phiên chưa được lưu. ' . $message,
+        ], 60);
     }
 
     private static function timestamp($value) {
-        if (!$value) return 0;
-        $date = date_create_from_format('Y-m-d\TH:i', $value, wp_timezone());
-        return $date ? $date->getTimestamp() : 0;
+        if (!is_string($value) || !preg_match('/\A[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}\z/', $value)) return 0;
+        $date = date_create_from_format('!Y-m-d\TH:i', $value, wp_timezone());
+        return $date && $date->format('Y-m-d\TH:i') === $value ? $date->getTimestamp() : 0;
     }
 
-    private static function state($auction_id) {
+    private static function parse_amount($value) {
+        if (!is_string($value) || !preg_match('/\A[0-9]+\z/', $value)) return false;
+        $digits = ltrim($value, '0');
+        $maximum = (string) PHP_INT_MAX;
+        if ($digits === '' || strlen($digits) > strlen($maximum)) return false;
+        if (strlen($digits) === strlen($maximum) && strcmp($digits, $maximum) > 0) return false;
+        return (int) $digits;
+    }
+
+    public static function state($auction_id) {
+        if (get_post_meta($auction_id, '_lw_auction_result', true)) return 'ended';
         $now = current_datetime()->getTimestamp();
         $start = self::timestamp(get_post_meta($auction_id, '_lw_start_at', true));
         $end = self::timestamp(get_post_meta($auction_id, '_lw_end_at', true));
+        if (!$start || !$end || $end <= $start) return 'invalid';
         if ($start && $now < $start) return 'upcoming';
         if ($end && $now >= $end) return 'ended';
         return 'live';
@@ -140,7 +212,7 @@ final class Luxury_Watches_Auctions {
     }
 
     private static function status_label($state) {
-        return ['live' => 'Đang diễn ra', 'upcoming' => 'Sắp mở', 'ended' => 'Đã kết thúc'][$state] ?? 'Đang cập nhật';
+        return ['live' => 'Đang diễn ra', 'upcoming' => 'Sắp mở', 'ended' => 'Đã kết thúc', 'invalid' => 'Đang cập nhật'][$state] ?? 'Đang cập nhật';
     }
 
     public static function register_rest_routes() {
@@ -269,6 +341,16 @@ final class Luxury_Watches_Auctions {
             'starts_at' => $start ? wp_date(DATE_ATOM, $start) : null,
             'ends_at' => $end ? wp_date(DATE_ATOM, $end) : null,
         ];
+    }
+
+    /**
+     * Read-only snapshot of a published auction for other plugins (chatbox).
+     * Uses the same state and minimum-bid rules as the REST API and bid handler.
+     */
+    public static function snapshot($auction_id) {
+        $auction_id = absint($auction_id);
+        if (!$auction_id || get_post_type($auction_id) !== 'watch_auction' || get_post_status($auction_id) !== 'publish') return null;
+        return self::auction_response($auction_id);
     }
 
     public static function api_auctions(WP_REST_Request $request) {
@@ -437,7 +519,7 @@ final class Luxury_Watches_Auctions {
         $messages = [
             'accepted' => ['success', 'Lượt trả giá đã được ghi nhận. Bạn đang theo dõi phiên với mức giá mới nhất.'],
             'low' => ['warning', 'Giá vừa thay đổi hoặc chưa đúng bước giá. Hãy dùng mức tối thiểu đang hiển thị.'],
-            'closed' => ['warning', 'Phiên đã đóng hoặc chưa mở nên không thể nhận lượt trả giá này.'],
+            'closed' => ['warning', 'Phiên chưa sẵn sàng nhận giá hoặc đã kết thúc.'],
             'rate' => ['warning', 'Bạn thao tác quá nhanh. Vui lòng chờ vài giây rồi thử lại.'],
             'error' => ['error', 'Không thể lưu lượt trả giá. Dữ liệu của bạn chưa bị ghi nhận; hãy thử lại.'],
         ];
@@ -456,6 +538,7 @@ final class Luxury_Watches_Auctions {
                 <form class="lw-bid-form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" data-bid-form><input type="hidden" name="action" value="luxury_place_bid"><input type="hidden" name="auction_id" value="<?php echo esc_attr($id); ?>"><?php wp_nonce_field('luxury_bid_' . $id, 'luxury_bid_nonce'); ?><label for="luxury-bid-amount">Mức trả giá (VND)</label><div class="lw-bid-form__row"><input id="luxury-bid-amount" name="amount" type="number" inputmode="numeric" min="<?php echo esc_attr($minimum); ?>" step="<?php echo esc_attr($increment); ?>" value="<?php echo esc_attr($minimum); ?>" required aria-describedby="luxury-bid-hint"><button type="submit">Xác nhận trả giá</button></div><div class="lw-bid-presets" aria-label="Mức giá đề xuất"><?php foreach ([1, 2, 3] as $multiple) : $suggestion = $minimum + ($increment * ($multiple - 1)); ?><button type="button" data-bid-value="<?php echo esc_attr($suggestion); ?>">+<?php echo esc_html(number_format_i18n($increment * $multiple)); ?></button><?php endforeach; ?></div><p id="luxury-bid-hint">Tối thiểu <?php echo wp_kses_post(self::money($minimum)); ?>. Hệ thống sẽ kiểm tra lại giá ngay trước khi ghi nhận.</p></form>
               <?php elseif ($state === 'live') : ?><p>Đăng nhập để xác nhận danh tính người trả giá và lưu lịch sử phiên.</p><a class="lw-auction-login" href="<?php echo esc_url(wp_login_url(get_permalink($id))); ?>">Đăng nhập để trả giá</a>
               <?php elseif ($state === 'upcoming') : ?><p>Phiên chưa mở. Hãy quay lại vào <?php echo esc_html(wp_date('H:i, d/m/Y', $start)); ?>.</p>
+              <?php elseif ($state === 'invalid') : ?><p>Thông tin thời gian của phiên đang được cập nhật. Vui lòng quay lại sau.</p>
               <?php else : ?><p>Phiên đã kết thúc. Giá cao nhất được ghi nhận là <strong><?php echo wp_kses_post(self::money($current)); ?></strong>.</p><?php endif; ?>
               <div class="lw-auction-assurance"><strong>Quy tắc an toàn</strong><p>Máy chủ khóa phiên trong lúc ghi giá, chặn gửi lặp và từ chối mọi giá đến sau giờ đóng.</p></div>
             </div>
@@ -484,26 +567,49 @@ final class Luxury_Watches_Auctions {
         $nonce = isset($_POST['luxury_bid_nonce']) ? sanitize_text_field(wp_unslash($_POST['luxury_bid_nonce'])) : '';
         if (!$auction_id || !wp_verify_nonce($nonce, 'luxury_bid_' . $auction_id) || get_post_type($auction_id) !== 'watch_auction' || get_post_status($auction_id) !== 'publish') wp_die('Yêu cầu trả giá không hợp lệ.', 'Không thể trả giá', ['response' => 400]);
         if (self::state($auction_id) !== 'live') self::redirect_status($auction_id, 'closed');
+        if (get_post_meta($auction_id, '_lw_auction_result', true)) self::redirect_status($auction_id, 'closed');
         $user_id = get_current_user_id();
         $rate_key = 'lw_bid_' . md5($auction_id . ':' . $user_id);
         if (get_transient($rate_key)) self::redirect_status($auction_id, 'rate');
         set_transient($rate_key, 1, 3);
-        $raw_amount = isset($_POST['amount']) ? preg_replace('/[^0-9]/', '', (string) wp_unslash($_POST['amount'])) : '';
-        $amount = $raw_amount !== '' ? (int) $raw_amount : 0;
-        $start_price = absint(get_post_meta($auction_id, '_lw_start_price', true));
-        $increment = max(1, absint(get_post_meta($auction_id, '_lw_bid_increment', true)));
-        if ($amount <= 0) self::redirect_status($auction_id, 'low');
+        $amount = self::parse_amount(isset($_POST['amount']) ? wp_unslash($_POST['amount']) : '');
+        if ($amount === false) self::redirect_status($auction_id, 'low');
         global $wpdb;
         $table = $wpdb->prefix . 'luxury_auction_bids';
-        $wpdb->query('START TRANSACTION');
+        if ($wpdb->query('START TRANSACTION') === false) self::redirect_status($auction_id, 'error');
         $locked = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE ID = %d FOR UPDATE", $auction_id));
-        if (!$locked || self::state($auction_id) !== 'live') { $wpdb->query('ROLLBACK'); self::redirect_status($auction_id, 'closed'); }
+        if ($wpdb->last_error) { $wpdb->query('ROLLBACK'); self::redirect_status($auction_id, 'error'); }
+        clean_post_cache($auction_id);
+        if (!$locked || get_post_status($auction_id) !== 'publish' || self::state($auction_id) !== 'live' || get_post_meta($auction_id, '_lw_auction_result', true)) {
+            $wpdb->query('ROLLBACK');
+            self::redirect_status($auction_id, 'closed');
+        }
+        $start_price = self::parse_amount(get_post_meta($auction_id, '_lw_start_price', true));
+        $increment = self::parse_amount(get_post_meta($auction_id, '_lw_bid_increment', true));
+        if ($start_price === false || $increment === false) {
+            $wpdb->query('ROLLBACK');
+            self::redirect_status($auction_id, 'closed');
+        }
         $summary = self::bid_summary($auction_id);
+        if ($wpdb->last_error) { $wpdb->query('ROLLBACK'); self::redirect_status($auction_id, 'error'); }
+        $recent_bid = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM {$table} WHERE auction_id = %d AND user_id = %d AND created_at > %s LIMIT 1",
+            $auction_id, $user_id, current_datetime()->modify('-3 seconds')->format('Y-m-d H:i:s')
+        ));
+        if ($wpdb->last_error) { $wpdb->query('ROLLBACK'); self::redirect_status($auction_id, 'error'); }
+        if ($recent_bid) { $wpdb->query('ROLLBACK'); self::redirect_status($auction_id, 'rate'); }
+        if ($summary['highest'] > PHP_INT_MAX - $increment) {
+            $wpdb->query('ROLLBACK');
+            self::redirect_status($auction_id, 'low');
+        }
         $minimum = $summary['highest'] > 0 ? $summary['highest'] + $increment : $start_price;
         if ($amount < $minimum || (($amount - $start_price) % $increment) !== 0) { $wpdb->query('ROLLBACK'); self::redirect_status($auction_id, 'low'); }
         $inserted = $wpdb->insert($table, ['auction_id' => $auction_id, 'user_id' => $user_id, 'amount' => $amount, 'created_at' => current_time('mysql'), 'ip_hash' => hash('sha256', (string) ($_SERVER['REMOTE_ADDR'] ?? '') . wp_salt('nonce'))], ['%d', '%d', '%d', '%s', '%s']);
-        $wpdb->query($inserted ? 'COMMIT' : 'ROLLBACK');
-        self::redirect_status($auction_id, $inserted ? 'accepted' : 'error');
+        if (!$inserted || $wpdb->query('COMMIT') === false) {
+            $wpdb->query('ROLLBACK');
+            self::redirect_status($auction_id, 'error');
+        }
+        self::redirect_status($auction_id, 'accepted');
     }
 
     public static function assets() {
@@ -514,3 +620,7 @@ final class Luxury_Watches_Auctions {
 
 register_activation_hook(__FILE__, ['Luxury_Watches_Auctions', 'activate']);
 Luxury_Watches_Auctions::init();
+require_once __DIR__ . '/includes/class-luxury-auction-admin.php';
+Luxury_Auction_Admin::init();
+require_once __DIR__ . '/includes/class-luxury-auction-dashboard.php';
+Luxury_Auction_Dashboard::init();

@@ -9,8 +9,8 @@ Text Domain: luxury-watches
 */
 
 :root {
-  --lw-font-body: "Plus Jakarta Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-  --lw-font-display: "Playfair Display", "Times New Roman", Georgia, serif;
+  --lw-font-body: "Be Vietnam Pro", "Segoe UI", sans-serif;
+  --lw-font-display: var(--lw-font-body);
   --lw-ink: #11100e;
   --lw-coal: #1b1916;
   --lw-cream: #f5f0e7;
@@ -45,7 +45,10 @@ h1, h2, h3, h4, h5, h6,
 .entry-title { font-family: var(--lw-font-display); letter-spacing: normal; }
 ::selection { background: #d5b477; color: #16120d; }
 a { color: var(--lw-gold-deep); text-underline-offset: .22em; }
-a:focus-visible, button:focus-visible, input:focus-visible {
+a:focus:not(:focus-visible), button:focus:not(:focus-visible), input:focus:not(:focus-visible), textarea:focus:not(:focus-visible) {
+  outline: none;
+}
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
   outline: 3px solid #c18b37;
   outline-offset: 3px;
 }
@@ -1123,7 +1126,7 @@ body {
 }
 
 .storefront-product-section .section-title {
-    font-family: 'Playfair Display', "Times New Roman", Georgia, serif !important;
+    font-family: var(--lw-font-display) !important;
     font-size: 24px !important;
     font-weight: 700 !important;
     letter-spacing: 0.8px;
@@ -1288,7 +1291,7 @@ body {
 
 .site-footer .widget-title {
     color: #d4af37 !important;
-    font-family: 'Playfair Display', "Times New Roman", Georgia, serif !important;
+    font-family: var(--lw-font-display) !important;
     font-size: 18px !important;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1339,7 +1342,7 @@ body {
     color: #d4af37;
     font-size: 28px;
     margin-bottom: 10px;
-    font-family: 'Playfair Display', "Times New Roman", Georgia, serif;
+    font-family: var(--lw-font-display);
 }
 
 .lw-policy-hero p, .lw-contact-hero p {
@@ -1629,7 +1632,7 @@ body {
 .woocommerce-cart table.cart thead th {
     background: #0f172a !important;
     color: #d4af37 !important;
-    font-family: 'Playfair Display', "Times New Roman", Georgia, serif !important;
+    font-family: var(--lw-font-display) !important;
     font-size: 12.5px !important;
     font-weight: 700 !important;
     text-transform: uppercase;
@@ -1663,7 +1666,7 @@ body {
 }
 
 .woocommerce-cart table.cart .product-name a {
-    font-family: 'Playfair Display', "Times New Roman", Georgia, serif;
+    font-family: var(--lw-font-display);
     font-weight: 600;
     font-size: 15px;
     color: #0f172a;
@@ -1806,7 +1809,7 @@ body {
 }
 
 .woocommerce-cart .cart_totals h2 {
-    font-family: 'Playfair Display', "Times New Roman", Georgia, serif !important;
+    font-family: var(--lw-font-display) !important;
     font-size: 19px !important;
     font-weight: 700 !important;
     color: #0f172a !important;

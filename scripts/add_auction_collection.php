@@ -148,13 +148,20 @@ foreach ($items as $item) {
 }
 
 $auction_page = get_page_by_path('dau-gia');
+$page_data = [
+    'post_title' => 'Đấu giá đồng hồ tuyển chọn',
+    'post_content' => '<p>Những cỗ máy thời gian được tuyển chọn với giá, bước giá và thời hạn công khai. Mỗi lượt trả hợp lệ được ghi nhận trực tiếp vào lịch sử phiên.</p>[luxury_auctions]',
+];
 if ($auction_page) {
-    wp_update_post([
-        'ID' => $auction_page->ID,
-        'post_title' => 'Đấu giá đồng hồ tuyển chọn',
-        'post_content' => '<p>Những cỗ máy thời gian được tuyển chọn với giá, bước giá và thời hạn công khai. Mỗi lượt trả hợp lệ được ghi nhận trực tiếp vào lịch sử phiên.</p>[luxury_auctions]',
-    ]);
+    $page_id = wp_update_post($page_data + ['ID' => $auction_page->ID], true);
+} else {
+    $page_id = wp_insert_post($page_data + [
+        'post_name' => 'dau-gia',
+        'post_type' => 'page',
+        'post_status' => 'publish',
+    ], true);
 }
+if (is_wp_error($page_id)) throw new RuntimeException($page_id->get_error_message());
 
 flush_rewrite_rules();
 echo wp_json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL;

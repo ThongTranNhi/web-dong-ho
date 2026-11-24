@@ -29,27 +29,57 @@ $new_url = $new_category ? get_term_link($new_category) : wc_get_page_permalink(
 $buying_guide_url = ($page = get_page_by_path('huong-dan-mua-hang')) ? get_permalink($page) : home_url('/huong-dan-mua-hang/');
 $auction_guide_url = ($page = get_page_by_path('huong-dan-dau-gia')) ? get_permalink($page) : home_url('/huong-dan-dau-gia/');
 $faq_url = ($page = get_page_by_path('cau-hoi-thuong-gap')) ? get_permalink($page) : home_url('/cau-hoi-thuong-gap/');
+$warranty_url = ($page = get_page_by_path('chinh-sach-bao-hanh')) ? get_permalink($page) : home_url('/chinh-sach-bao-hanh/');
+$auction_overview = lw_auction_overview();
+$featured_auctions = array_slice(array_merge($auction_overview['live'], $auction_overview['upcoming'], $auction_overview['ended']), 0, 3);
 ?>
 
 <main id="primary" class="site-main">
   <section class="lw-hero" style="--lw-hero-image:url('<?php echo esc_url($hero_image); ?>')">
     <div class="lw-wrap lw-hero__content">
-      <h1 class="lw-display">Thời gian, được tuyển chọn như một di sản.</h1>
-      <p>Khám phá đồng hồ chính hãng, câu chuyện chế tác và những phiên đấu giá minh bạch dành cho người yêu vẻ đẹp trường tồn.</p>
+      <p class="lw-hero__signature">LW Atelier · Bộ sưu tập &amp; đấu giá</p>
+      <h1 class="lw-display">Dấu ấn riêng.<br>Trên từng nhịp thời gian.</h1>
+      <p>Chọn chiếc đồng hồ hợp phong cách của bạn. Khám phá bộ sưu tập hoặc tìm một lựa chọn khác qua những phiên đấu giá công khai.</p>
       <div class="lw-actions">
         <a class="lw-button" href="<?php echo esc_url(wc_get_page_permalink('shop')); ?>">Khám phá bộ sưu tập</a>
-        <a class="lw-button lw-button--ghost" href="<?php echo esc_url($auction_url); ?>">Xem phiên đấu giá</a>
+        <a class="lw-button lw-button--ghost" href="<?php echo esc_url($auction_url); ?>">Tham gia đấu giá</a>
       </div>
+      <a class="lw-hero__auction-note" href="#phien-dau-gia"><span class="lw-auction-marker" aria-hidden="true"></span><?php echo $auction_overview['live'] ? esc_html(count($auction_overview['live']) . ' phiên đang mở · Xem giá và thời gian còn lại') : 'Xem các phiên và cách tham gia đấu giá'; ?></a>
     </div>
   </section>
 
   <div class="lw-trust">
     <div class="lw-wrap lw-trust__grid">
-      <div class="lw-trust__item"><strong>Cam kết chính hãng</strong><span>Thông tin xuất xứ minh bạch</span></div>
-      <div class="lw-trust__item"><strong>Bảo hành tận tâm</strong><span>Hỗ trợ sau mua rõ ràng</span></div>
-      <div class="lw-trust__item"><strong>Đấu giá công khai</strong><span>Lưu lịch sử và bước giá hợp lệ</span></div>
+      <div class="lw-trust__item"><strong>Chọn theo phong cách</strong><span>Kích thước, bộ máy và thiết kế</span></div>
+      <div class="lw-trust__item"><strong>Thông tin rõ ràng</strong><span>Giá, tồn kho và chính sách từng mẫu</span></div>
+      <div class="lw-trust__item"><strong>Đấu giá công khai</strong><span>Xem bước giá và lịch sử của phiên</span></div>
     </div>
   </div>
+
+  <section class="lw-auction-discovery" id="phien-dau-gia" aria-labelledby="lw-discovery-title">
+    <div class="lw-wrap">
+      <header class="lw-section__head">
+        <div><p class="lw-eyebrow">Một cách khác để sở hữu</p><h2 id="lw-discovery-title">Khám phá sàn đấu giá</h2></div>
+        <a class="lw-text-link" href="<?php echo esc_url($auction_url); ?>">Xem tất cả phiên đấu giá</a>
+      </header>
+      <div class="lw-auction-discovery__intro">
+        <p><?php echo $auction_overview['live'] ? 'Các phiên đang mở được ưu tiên hiển thị. Xem giá hiện tại và thời gian còn lại trước khi tham gia.' : ($auction_overview['upcoming'] ? 'Các phiên sắp mở được hiển thị bên dưới. Xem trước sản phẩm, giá khởi điểm và giờ bắt đầu.' : 'Các phiên gần đây đã kết thúc. Bạn có thể xem lại sản phẩm, mức giá và lịch sử của từng phiên.'); ?></p>
+        <a href="<?php echo esc_url($auction_guide_url); ?>">Lần đầu tham gia? Xem hướng dẫn</a>
+      </div>
+      <?php if ($featured_auctions) : ?>
+        <div class="lw-auction-grid lw-auction-discovery__grid">
+          <?php foreach ($featured_auctions as $auction_id) echo Luxury_Watches_Auctions::auction_card($auction_id); ?>
+        </div>
+      <?php else : ?>
+        <p>Phiên mới sẽ được công bố tại đây. Bạn có thể tìm hiểu quy tắc trong hướng dẫn đấu giá.</p>
+      <?php endif; ?>
+      <div class="lw-discovery-steps" aria-label="Cách tham gia đấu giá">
+        <span><b>1</b> Chọn phiên và kiểm tra bước giá</span>
+        <span><b>2</b> Đăng nhập để gửi mức giá</span>
+        <span><b>3</b> Theo dõi lịch sử và kết quả</span>
+      </div>
+    </div>
+  </section>
 
   <section class="lw-section lw-section--cream">
     <div class="lw-wrap">
@@ -151,7 +181,7 @@ $faq_url = ($page = get_page_by_path('cau-hoi-thuong-gap')) ? get_permalink($pag
         <div class="lw-care-feature__content">
           <h2 class="lw-display">Sự an tâm tiếp tục sau khi bạn nhận đồng hồ.</h2>
           <p>Mỗi sản phẩm được kiểm tra ngoại hình và chức năng trước khi bàn giao. Thông tin bảo hành được lưu rõ ràng để việc hỗ trợ sau mua luôn thuận tiện.</p>
-          <div><a class="lw-button" href="<?php echo esc_url(get_permalink(14)); ?>">Xem chính sách bảo hành</a></div>
+          <div><a class="lw-button" href="<?php echo esc_url($warranty_url); ?>">Xem chính sách bảo hành</a></div>
         </div>
         <img class="lw-care-feature__image" src="<?php echo esc_url($care_image); ?>" alt="Kiểm tra bộ máy đồng hồ tại bàn kỹ thuật" loading="lazy" width="1536" height="1024">
       </div>
