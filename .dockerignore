@@ -1,15 +1,30 @@
-.git
-.github
-.env
-.env.*
-wp-config.php
-*.sql
-*.zip
-*.log
-Thumbs.db
-node_modules
-tmp
-netlify-export
-lab-reports
-wordpress/wp-admin
-wordpress/wp-includes
+# Danh sách cho phép: chặn mọi thứ, chỉ mở đúng những gì image cần.
+# Bảo đảm .env, wp-config.php của máy, file SQL/backup, log, ảnh chụp test
+# và mã nguồn bên thứ ba cài sẵn trên máy không lọt vào image.
+*
+
+!docker/
+!wordpress/wp-content/themes/luxury-watches-child/
+!wordpress/wp-content/themes/astra/functions.php
+!wordpress/wp-content/themes/astra/inc/lab9-functions.php
+!wordpress/wp-content/plugins/luxury-auctions/
+!wordpress/wp-content/plugins/luxury-chatbox/
+!wordpress/wp-content/plugins/ai-content-guard/
+!wordpress/wp-content/uploads/2026/
+!wordpress/wp-content/uploads/woocommerce-placeholder.webp
+
+# Loại trừ bên trong các thư mục được phép.
+docker/db-init/
+**/*.sql
+**/*.sql.gz
+**/*.log
+**/*.bak
+**/*.zip
+**/.env
+**/.env.*
+**/node_modules
+**/.DS_Store
+**/Thumbs.db
+# Ảnh PNG gốc (đã có bản WebP), giống .gitignore.
+wordpress/wp-content/themes/luxury-watches-child/assets/images/*.png
+wordpress/wp-content/uploads/2026/10/luxury-new-arrivals/*.png

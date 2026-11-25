@@ -1,0 +1,106 @@
+# Luxury Watches – Docker Compose
+#
+#   cp .env.example .env    # rồi đổi mật khẩu trong .env
+#   docker compose up --build -d
+#   → http://localhost:8000
+#
+# phpMyAdmin (chỉ local):  docker compose --profile tools up -d   → http://localhost:8081
+# Phát triển theme/plugin: docker compose -f compose.yaml -f compose.dev.yaml up --build
+# Hướng dẫn đầy đủ: docs/DOCKER_DEPLOY.md
+
+name: luxury-watches
+
+services:
+  db:
+    image: mysql:8.4.13
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --max-allowed-packet=256M
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Đặt MYSQL_ROOT_PASSWORD trong .env}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-luxury_watches}
+      MYSQL_USER: ${MYSQL_USER:-wordpress}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Đặt MYSQL_PASSWORD trong .env}
+    volumes:
+      - db_data:/var/lib/mysql
+      # File .sql / .sql.gz ở đây chỉ được import khi volume database còn trống.
+      - ${DB_INIT_DIR:-./docker/db-init}:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_ROOT_PASSWORD\" mysqladmin ping -h 127.0.0.1 -uroot --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    networks:
+      - backend
+    # Không mở cổng database ra máy host.
+
+  wordpress:
+    build:
+      context: .
+    image: luxury-watches-wordpress:local
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: "8080"
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST:-db}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-luxury_watches}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-wordpress}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-${MYSQL_PASSWORD}}
+      WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX:-wp_}
+      WP_HOME: ${WP_HOME:-http://localhost:${APP_PORT:-8000}}
+      WP_SITEURL: ${WP_SITEURL:-}
+      WP_ENVIRONMENT_TYPE: ${WP_ENVIRONMENT_TYPE:-local}
+      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG:-false}
+      WORDPRESS_FORCE_SSL_ADMIN: ${WORDPRESS_FORCE_SSL_ADMIN:-}
+      WORDPRESS_AUTH_KEY: ${WORDPRESS_AUTH_KEY:-}
+      WORDPRESS_SECURE_AUTH_KEY: ${WORDPRESS_SECURE_AUTH_KEY:-}
+      WORDPRESS_LOGGED_IN_KEY: ${WORDPRESS_LOGGED_IN_KEY:-}
+      WORDPRESS_NONCE_KEY: ${WORDPRESS_NONCE_KEY:-}
+      WORDPRESS_AUTH_SALT: ${WORDPRESS_AUTH_SALT:-}
+      WORDPRESS_SECURE_AUTH_SALT: ${WORDPRESS_SECURE_AUTH_SALT:-}
+      WORDPRESS_LOGGED_IN_SALT: ${WORDPRESS_LOGGED_IN_SALT:-}
+      WORDPRESS_NONCE_SALT: ${WORDPRESS_NONCE_SALT:-}
+      LUXURY_CHATBOX_GEMINI_KEY: ${LUXURY_CHATBOX_GEMINI_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      LW_API_ALLOWED_ORIGINS: ${LW_API_ALLOWED_ORIGINS:-}
+    ports:
+      - "${APP_PORT:-8000}:8080"
+    volumes:
+      - uploads:/var/www/html/wp-content/uploads
+    networks:
+      - backend
+      - web
+
+  phpmyadmin:
+    image: phpmyadmin:5.2.3
+    profiles: ["tools"]
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PMA_HOST: db
+      UPLOAD_LIMIT: 256M
+    ports:
+      # Chỉ nghe trên máy local, không mở ra mạng LAN.
+      - "127.0.0.1:${PMA_PORT:-8081}:80"
+    networks:
+      - backend
+      - web
+
+networks:
+  # Mạng nội bộ: database không ra được Internet và không nhận kết nối từ ngoài.
+  backend:
+    internal: true
+  # WordPress cần ra Internet (Gemini, SePay, Google) và nhận request từ host.
+  web: {}
+
+volumes:
+  db_data:
+  uploads:

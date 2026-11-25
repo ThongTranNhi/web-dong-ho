@@ -13,6 +13,9 @@
 !/wordpress/
 !/Dockerfile
 !/.dockerignore
+!/compose.yaml
+!/compose.dev.yaml
+!/.gitattributes
 !/railway.toml
 !/docker/
 !/docker/**

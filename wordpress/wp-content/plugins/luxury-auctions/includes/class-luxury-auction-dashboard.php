@@ -255,6 +255,81 @@ final class Luxury_Auction_Dashboard {
         return new WP_Query($args);
     }
 
+    /** Safely update a WooCommerce order from the standalone dashboard. */
+    public static function update_order($order_id, array $input) {
+        if (!self::can_manage()) return new WP_Error('forbidden', 'Bạn không có quyền cập nhật đơn hàng.');
+        $order = wc_get_order(absint($order_id));
+        if (!$order || !current_user_can('edit_shop_order', $order->get_id())) return new WP_Error('invalid_order', 'Không tìm thấy đơn hàng hoặc bạn không có quyền chỉnh sửa.');
+
+        $reason = is_string($input['reason'] ?? null) ? sanitize_textarea_field($input['reason']) : '';
+        if (mb_strlen(trim($reason)) < 5) return new WP_Error('reason_required', 'Vui lòng nhập lý do thay đổi ít nhất 5 ký tự.');
+
+        $action = is_string($input['action'] ?? null) ? sanitize_key($input['action']) : '';
+        $user = wp_get_current_user();
+        $actor = $user->display_name ?: $user->user_login;
+        if ($action === 'mark_paid') {
+            $transaction_id = is_string($input['transaction_id'] ?? null) ? sanitize_text_field($input['transaction_id']) : '';
+            if (!$order->is_paid()) $order->payment_complete($transaction_id);
+            elseif ($transaction_id !== '' && $order->get_transaction_id() === '') {
+                $order->set_transaction_id($transaction_id);
+                $order->save();
+            }
+            $order->add_order_note(sprintf('Quản trị viên %s xác nhận đã thanh toán. Lý do: %s%s', $actor, $reason, $transaction_id !== '' ? ' Mã giao dịch: ' . $transaction_id : ''));
+            return $order->get_id();
+        }
+
+        if ($action !== 'status') return new WP_Error('invalid_action', 'Thao tác đơn hàng không hợp lệ.');
+        $status = is_string($input['status'] ?? null) ? sanitize_key($input['status']) : '';
+        $allowed = ['pending', 'on-hold', 'processing', 'completed', 'cancelled', 'failed'];
+        if (!in_array($status, $allowed, true)) return new WP_Error('invalid_status', 'Trạng thái đơn hàng không được phép.');
+        $old_status = $order->get_status();
+        if ($old_status !== $status) $order->update_status($status, '', true);
+        $order->add_order_note(sprintf('Quản trị viên %s đổi trạng thái từ “%s” sang “%s”. Lý do: %s', $actor, wc_get_order_status_name($old_status), wc_get_order_status_name($status), $reason));
+        return $order->get_id();
+    }
+
+    /** Return an order only when the current dashboard user may manage it. */
+    public static function managed_order($order_id) {
+        if (!self::can_manage()) return new WP_Error('forbidden', 'Bạn không có quyền xem đơn hàng.');
+        $order = wc_get_order(absint($order_id));
+        if (!$order || !current_user_can('edit_shop_order', $order->get_id())) return new WP_Error('invalid_order', 'Không tìm thấy đơn hàng hoặc bạn không có quyền chỉnh sửa.');
+        return $order;
+    }
+
+    public static function order_status_labels() {
+        return [
+            'pending' => 'Chờ thanh toán',
+            'on-hold' => 'Tạm giữ',
+            'processing' => 'Đang xử lý',
+            'completed' => 'Hoàn tất',
+            'cancelled' => 'Đã hủy',
+            'refunded' => 'Đã hoàn tiền',
+            'failed' => 'Thất bại',
+            'checkout-draft' => 'Bản nháp thanh toán',
+            'draft' => 'Bản nháp',
+        ];
+    }
+
+    /** Search and paginate WooCommerce orders for the dashboard. */
+    public static function order_list($search, $status, $page, $per_page = 20) {
+        if (!self::can_manage()) return new WP_Error('forbidden', 'Bạn không có quyền xem danh sách đơn hàng.');
+        $allowed = array_map(static fn($key) => str_replace('wc-', '', $key), array_keys(wc_get_order_statuses()));
+        $status = is_string($status) ? sanitize_key($status) : '';
+        if ($status !== '' && !in_array($status, $allowed, true)) return new WP_Error('invalid_status', 'Bộ lọc trạng thái không hợp lệ.');
+        $args = [
+            'limit' => max(1, min(100, absint($per_page))),
+            'page' => max(1, absint($page)),
+            'paginate' => true,
+            'orderby' => 'date',
+            'order' => 'DESC',
+            'type' => 'shop_order',
+        ];
+        if ($status !== '') $args['status'] = $status;
+        $search = is_string($search) ? sanitize_text_field($search) : '';
+        if ($search !== '') $args['search'] = '*' . $search . '*';
+        return wc_get_orders($args);
+    }
+
     public static function render() {
         $requested = untrailingslashit(wp_parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH));
         if ($requested !== untrailingslashit(wp_parse_url(self::url(), PHP_URL_PATH))) return;
@@ -263,7 +338,7 @@ final class Luxury_Auction_Dashboard {
         if (!is_user_logged_in()) { auth_redirect(); exit; }
         if (!self::can_manage()) wp_die('Trang này dành cho quản trị viên cửa hàng.', 'Không có quyền truy cập', ['response' => 403]);
         status_header(200);
-        $view = in_array($_GET['view'] ?? '', ['new', 'new-product', 'products'], true) ? $_GET['view'] : 'list';
+        $view = in_array($_GET['view'] ?? '', ['new', 'new-product', 'products', 'orders', 'order'], true) ? $_GET['view'] : 'list';
         $error = '';
         $values = [];
         $product_values = [];
@@ -275,7 +350,14 @@ final class Luxury_Auction_Dashboard {
         if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             $submission = is_string($_POST['submission'] ?? null) ? sanitize_text_field(wp_unslash($_POST['submission'])) : '';
             $form = $_POST['lwa_form'] ?? '';
-            if (in_array($form, ['trash_product', 'restore_product'], true)) {
+            if ($form === 'order_update') {
+                $target = absint($_POST['lwa_order_id'] ?? 0);
+                check_admin_referer('lwa_order_update_' . $target, 'lwa_nonce');
+                $order_input = is_array($_POST['order'] ?? null) ? wp_unslash($_POST['order']) : [];
+                $result = self::update_order($target, $order_input);
+                if (is_wp_error($result)) { $error = $result->get_error_message(); $view = 'order'; }
+                else { wp_safe_redirect(add_query_arg(['view' => 'order', 'order_id' => $result, 'order_updated' => 1], self::url())); exit; }
+            } elseif (in_array($form, ['trash_product', 'restore_product'], true)) {
                 $target = absint($_POST['lwa_product_id'] ?? 0);
                 check_admin_referer('lwa_' . $form . '_' . $target, 'lwa_nonce');
                 $result = $form === 'trash_product' ? self::trash_product($target) : self::restore_product($target);
@@ -301,6 +383,17 @@ final class Luxury_Auction_Dashboard {
         $product_search = isset($_GET['lwa_q']) ? sanitize_text_field(wp_unslash($_GET['lwa_q'])) : '';
         $product_page = max(1, absint($_GET['lwa_page'] ?? 1));
         $product_query = $view === 'products' ? self::product_list($product_search, $product_page) : null;
+        $order_search = isset($_GET['order_q']) ? sanitize_text_field(wp_unslash($_GET['order_q'])) : '';
+        $order_status = isset($_GET['order_status']) ? sanitize_key(wp_unslash($_GET['order_status'])) : '';
+        $order_page = max(1, absint($_GET['order_page'] ?? 1));
+        $order_query = $view === 'orders' ? self::order_list($order_search, $order_status, $order_page) : null;
+        if (is_wp_error($order_query)) { $error = $order_query->get_error_message(); $order_status = ''; $order_query = self::order_list($order_search, '', $order_page); }
+        $managed_order = null;
+        if ($view === 'order') {
+            $managed_order = self::managed_order(absint($_REQUEST['order_id'] ?? $_POST['lwa_order_id'] ?? 0));
+            if (is_wp_error($managed_order)) { $error = $managed_order->get_error_message(); $managed_order = null; }
+        }
+        $order_statuses = self::order_status_labels();
         $query = new WP_Query(['post_type' => 'watch_auction', 'post_status' => ['publish', 'draft', 'pending', 'private'], 'posts_per_page' => 20, 'paged' => max(1, absint($_GET['paged'] ?? 1))]);
         $products = function_exists('wc_get_products') ? wc_get_products(['status' => 'publish', 'limit' => -1, 'orderby' => 'name', 'order' => 'ASC']) : [];
         $base = plugin_dir_url(dirname(__FILE__)) . 'assets/';

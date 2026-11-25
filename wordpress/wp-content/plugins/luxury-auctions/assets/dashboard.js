@@ -123,3 +123,25 @@
     });
   });
 })();
+
+// Order detail: require a deliberate confirmation before a financial status change.
+(() => {
+  'use strict';
+  document.querySelectorAll('.js-order-update').forEach((form) => {
+    let sent = false;
+    form.addEventListener('submit', (event) => {
+      if (sent) { event.preventDefault(); return; }
+      const submitter = event.submitter;
+      const status = form.querySelector('#order-new-status');
+      status.setCustomValidity(submitter && submitter.value === 'status' && !status.value ? 'Vui lòng chọn trạng thái mới.' : '');
+      const action = submitter && submitter.value === 'mark_paid' ? 'xác nhận đã thanh toán' : 'cập nhật trạng thái';
+      const number = form.dataset.orderNumber || '';
+      if (!form.reportValidity() || !window.confirm(`Bạn chắc chắn muốn ${action} cho đơn #${number}?\n\nThao tác sẽ được lưu vào lịch sử đơn hàng.`)) {
+        event.preventDefault();
+        return;
+      }
+      sent = true;
+      form.querySelectorAll('button[type="submit"]').forEach((button) => button.setAttribute('aria-disabled', 'true'));
+    });
+  });
+})();

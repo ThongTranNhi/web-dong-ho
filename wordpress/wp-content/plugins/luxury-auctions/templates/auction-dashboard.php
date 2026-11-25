@@ -22,6 +22,8 @@ $headings = [
     'new' => ['Tạo phiên đấu giá', 'Chọn đồng hồ, thiết lập mức giá và sẵn sàng đón lượt trả đầu tiên.'],
     'new-product' => ['Thêm sản phẩm', 'Đưa một chiếc đồng hồ mới vào cửa hàng, sau đó có thể mở phiên đấu giá cho nó.'],
     'products' => ['Sản phẩm', 'Các đồng hồ đang có trong cửa hàng. Sản phẩm bị xóa được chuyển vào thùng rác và có thể khôi phục.'],
+    'orders' => ['Đơn hàng', 'Theo dõi thanh toán, tìm đơn và xử lý khi khách hàng cần hỗ trợ.'],
+    'order' => ['Chi tiết đơn hàng', 'Kiểm tra đầy đủ thông tin trước khi xác nhận thanh toán hoặc đổi trạng thái.'],
 ];
 $trashed_id = absint($_GET['trashed'] ?? 0);
 $trashed_post = $trashed_id ? get_post($trashed_id) : null;
@@ -54,6 +56,7 @@ $keep_fields = static function () use ($product_search, $product_page) {
       <a href="<?php echo esc_url(add_query_arg('view', 'new', self::url())); ?>" <?php if ($view === 'new') echo 'aria-current="page"'; ?>>Tạo phiên đấu giá</a>
       <a href="<?php echo esc_url(add_query_arg('view', 'products', self::url())); ?>" <?php if ($view === 'products') echo 'aria-current="page"'; ?>>Sản phẩm</a>
       <a href="<?php echo esc_url(add_query_arg('view', 'new-product', self::url())); ?>" <?php if ($view === 'new-product') echo 'aria-current="page"'; ?>>Thêm sản phẩm</a>
+      <a href="<?php echo esc_url(add_query_arg('view', 'orders', self::url())); ?>" <?php if (in_array($view, ['orders', 'order'], true)) echo 'aria-current="page"'; ?>>Đơn hàng</a>
       <a href="<?php echo esc_url(home_url('/dau-gia/')); ?>" target="_blank" rel="noopener">Xem sàn đấu giá</a>
     </nav>
     <div class="sidebar-note"><strong>Một phiên, một lựa chọn.</strong><p>Thông tin rõ ràng giúp khách hàng tự tin tham gia.</p></div>
@@ -66,6 +69,7 @@ $keep_fields = static function () use ($product_search, $product_page) {
         <div><p class="eyebrow">Luxury Watches</p><h1><?php echo esc_html($headings[$view][0]); ?></h1><p><?php echo esc_html($headings[$view][1]); ?></p></div>
         <?php if ($view === 'list') : ?><a class="button" href="<?php echo esc_url(add_query_arg('view', 'new', self::url())); ?>">+ Tạo phiên mới</a><?php endif; ?>
         <?php if ($view === 'products') : ?><a class="button" href="<?php echo esc_url(add_query_arg('view', 'new-product', self::url())); ?>">+ Thêm sản phẩm</a><?php endif; ?>
+        <?php if ($view === 'order') : ?><a class="button secondary" href="<?php echo esc_url(add_query_arg('view', 'orders', self::url())); ?>">← Danh sách đơn</a><?php endif; ?>
       </header>
       <?php if ($trashed_post && $trashed_post->post_type === 'product' && $trashed_post->post_status === 'trash' && current_user_can('delete_post', $trashed_id)) : ?>
         <div class="notice success" role="status">
@@ -100,7 +104,75 @@ $keep_fields = static function () use ($product_search, $product_page) {
         </div>
       <?php endif; ?>
 
-      <?php if ($view === 'new-product') : ?>
+      <?php if (!empty($_GET['order_updated']) && $managed_order) : ?>
+        <div class="notice success" role="status">Đã cập nhật đơn hàng #<?php echo esc_html($managed_order->get_order_number()); ?> và lưu lịch sử thao tác.</div>
+      <?php endif; ?>
+
+      <?php if ($view === 'orders') : ?>
+      <section class="panel auction-list order-list" aria-label="Danh sách đơn hàng">
+        <div class="list-heading">
+          <h2>Đơn hàng WooCommerce</h2>
+          <span><?php echo esc_html((int) $order_query->total); ?> đơn</span>
+        </div>
+        <form method="get" action="<?php echo esc_url(self::url()); ?>" class="order-filters" role="search">
+          <input type="hidden" name="view" value="orders">
+          <div><label for="order-q">Tìm đơn hàng</label><input id="order-q" type="search" name="order_q" value="<?php echo esc_attr($order_search); ?>" placeholder="Mã đơn, tên, email hoặc số điện thoại"></div>
+          <div><label for="order-status">Trạng thái</label><select id="order-status" name="order_status"><option value="">Tất cả trạng thái</option><?php foreach ($order_statuses as $key => $label) : $slug = str_replace('wc-', '', $key); ?><option value="<?php echo esc_attr($slug); ?>" <?php selected($order_status, $slug); ?>><?php echo esc_html($label); ?></option><?php endforeach; ?></select></div>
+          <button class="button" type="submit">Lọc đơn</button>
+          <?php if ($order_search !== '' || $order_status !== '') : ?><a class="button secondary" href="<?php echo esc_url(add_query_arg('view', 'orders', self::url())); ?>">Xóa lọc</a><?php endif; ?>
+        </form>
+        <?php if ($order_query->orders) : ?>
+          <div class="table-wrap"><table><thead><tr><th>Đơn hàng</th><th>Khách hàng</th><th>Trạng thái</th><th>Tổng tiền</th><th>Thanh toán</th><th>Ngày tạo</th><th>Thao tác</th></tr></thead><tbody>
+          <?php foreach ($order_query->orders as $item_order) : ?>
+            <tr>
+              <td><strong>#<?php echo esc_html($item_order->get_order_number()); ?></strong><small class="table-sub"><?php echo esc_html($item_order->get_item_count()); ?> sản phẩm</small></td>
+              <td><strong><?php echo esc_html($item_order->get_formatted_billing_full_name() ?: 'Khách vãng lai'); ?></strong><small class="table-sub"><?php echo esc_html($item_order->get_billing_email()); ?></small><small class="table-sub"><?php echo esc_html($item_order->get_billing_phone()); ?></small></td>
+              <td><span class="badge order-status status-<?php echo esc_attr($item_order->get_status()); ?>"><?php echo esc_html($order_statuses[$item_order->get_status()] ?? wc_get_order_status_name($item_order->get_status())); ?></span><?php if ($item_order->is_paid()) : ?><small class="paid-flag">Đã ghi nhận thanh toán</small><?php endif; ?></td>
+              <td><?php echo wp_kses_post($item_order->get_formatted_order_total()); ?></td>
+              <td><?php echo esc_html($item_order->get_payment_method_title() ?: 'Chưa chọn'); ?></td>
+              <td><?php echo esc_html($item_order->get_date_created() ? $item_order->get_date_created()->date_i18n('d/m/Y H:i') : '—'); ?></td>
+              <td><a class="button secondary compact" href="<?php echo esc_url(add_query_arg(['view' => 'order', 'order_id' => $item_order->get_id()], self::url())); ?>">Xem chi tiết</a></td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody></table></div>
+          <nav class="pagination" aria-label="Trang danh sách đơn hàng"><?php echo wp_kses_post(paginate_links(['base' => add_query_arg(array_filter(['view' => 'orders', 'order_q' => $order_search, 'order_status' => $order_status, 'order_page' => '%#%']), self::url()), 'format' => '', 'total' => $order_query->max_num_pages, 'current' => $order_page, 'prev_text' => 'Trước', 'next_text' => 'Tiếp'])); ?></nav>
+        <?php else : ?><div class="empty"><h3>Không tìm thấy đơn hàng</h3><p>Thử bỏ bộ lọc hoặc tìm bằng thông tin khác.</p></div><?php endif; ?>
+      </section>
+
+      <?php elseif ($view === 'order') : ?>
+        <?php if ($managed_order) : $order_notes = wc_get_order_notes(['order_id' => $managed_order->get_id(), 'type' => 'internal']); ?>
+        <div class="order-detail-grid">
+          <div class="order-detail-main">
+            <section class="panel order-overview">
+              <div class="order-title-row"><div><p class="eyebrow">Đơn hàng</p><h2>#<?php echo esc_html($managed_order->get_order_number()); ?></h2></div><span class="badge order-status status-<?php echo esc_attr($managed_order->get_status()); ?>"><?php echo esc_html($order_statuses[$managed_order->get_status()] ?? wc_get_order_status_name($managed_order->get_status())); ?></span></div>
+              <div class="order-meta-grid">
+                <div><span>Khách hàng</span><strong><?php echo esc_html($managed_order->get_formatted_billing_full_name() ?: 'Khách vãng lai'); ?></strong><a href="mailto:<?php echo esc_attr($managed_order->get_billing_email()); ?>"><?php echo esc_html($managed_order->get_billing_email()); ?></a><a href="tel:<?php echo esc_attr(preg_replace('/\s+/', '', $managed_order->get_billing_phone())); ?>"><?php echo esc_html($managed_order->get_billing_phone()); ?></a></div>
+                <div><span>Thanh toán</span><strong><?php echo esc_html($managed_order->get_payment_method_title() ?: 'Chưa chọn phương thức'); ?></strong><small><?php echo $managed_order->is_paid() ? 'Đã ghi nhận thanh toán' : 'Chưa ghi nhận thanh toán'; ?></small><?php if ($managed_order->get_transaction_id()) : ?><small>Mã GD: <?php echo esc_html($managed_order->get_transaction_id()); ?></small><?php endif; ?></div>
+                <div><span>Ngày tạo</span><strong><?php echo esc_html($managed_order->get_date_created() ? $managed_order->get_date_created()->date_i18n('d/m/Y H:i') : '—'); ?></strong><small>Tiền tệ: <?php echo esc_html($managed_order->get_currency()); ?></small></div>
+              </div>
+            </section>
+            <section class="panel"><h2>Sản phẩm</h2><div class="table-wrap"><table class="order-items"><thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Thành tiền</th></tr></thead><tbody><?php foreach ($managed_order->get_items() as $order_item) : ?><tr><td><strong><?php echo esc_html($order_item->get_name()); ?></strong><?php if ($order_item->get_product()) : ?><small class="table-sub"><?php echo esc_html($order_item->get_product()->get_sku()); ?></small><?php endif; ?></td><td><?php echo esc_html($order_item->get_quantity()); ?></td><td><?php echo wp_kses_post($managed_order->get_formatted_line_subtotal($order_item)); ?></td></tr><?php endforeach; ?></tbody><tfoot><tr><th colspan="2">Tổng cộng</th><td><strong><?php echo wp_kses_post($managed_order->get_formatted_order_total()); ?></strong></td></tr></tfoot></table></div></section>
+            <section class="panel"><h2>Lịch sử đơn hàng</h2><?php if ($order_notes) : ?><ol class="order-timeline"><?php foreach ($order_notes as $note) : ?><li><p><?php echo wp_kses_post(wpautop($note->content)); ?></p><time><?php echo esc_html(wp_date('d/m/Y H:i', strtotime($note->date_created))); ?></time></li><?php endforeach; ?></ol><?php else : ?><p class="help">Chưa có ghi chú nội bộ.</p><?php endif; ?></section>
+          </div>
+          <aside class="order-actions-panel">
+            <form method="post" class="panel js-order-update" data-order-number="<?php echo esc_attr($managed_order->get_order_number()); ?>">
+              <?php wp_nonce_field('lwa_order_update_' . $managed_order->get_id(), 'lwa_nonce'); ?>
+              <input type="hidden" name="lwa_form" value="order_update"><input type="hidden" name="lwa_order_id" value="<?php echo esc_attr($managed_order->get_id()); ?>">
+              <h2>Xử lý đơn hàng</h2>
+              <label for="order-new-status">Trạng thái mới</label>
+              <?php $editable_order_statuses = ['pending', 'on-hold', 'processing', 'completed', 'cancelled', 'failed']; ?>
+              <select id="order-new-status" name="order[status]"><?php if (!in_array($managed_order->get_status(), $editable_order_statuses, true)) : ?><option value="" disabled selected>Chọn trạng thái mới</option><?php endif; ?><?php foreach ($editable_order_statuses as $slug) : ?><option value="<?php echo esc_attr($slug); ?>" <?php selected($managed_order->get_status(), $slug); ?>><?php echo esc_html($order_statuses[$slug]); ?></option><?php endforeach; ?></select>
+              <label for="order-transaction">Mã giao dịch <span class="label-note">(không bắt buộc)</span></label><input id="order-transaction" name="order[transaction_id]" value="<?php echo esc_attr($managed_order->get_transaction_id()); ?>" maxlength="100">
+              <label for="order-reason">Lý do thay đổi *</label><textarea id="order-reason" name="order[reason]" rows="4" minlength="5" required placeholder="Ví dụ: Đã kiểm tra giao dịch trên SePay và xác nhận khách đã thanh toán."></textarea>
+              <button class="button secondary order-status-submit" type="submit" name="order[action]" value="status">Cập nhật trạng thái</button>
+              <button class="button order-paid-submit" type="submit" name="order[action]" value="mark_paid" <?php if ($managed_order->is_paid()) echo 'disabled'; ?>><?php echo $managed_order->is_paid() ? 'Đơn đã thanh toán' : 'Xác nhận đã thanh toán'; ?></button>
+              <p class="help warning"><strong>Lưu ý:</strong> xác nhận đã thanh toán chỉ cập nhật WooCommerce. Hệ thống không tự thu tiền. Không dùng đổi trạng thái để xử lý hoàn tiền thật.</p>
+            </form>
+          </aside>
+        </div>
+        <?php else : ?><div class="empty panel"><h3>Không thể mở đơn hàng</h3><p>Đơn không tồn tại hoặc bạn không có quyền truy cập.</p><a class="button secondary" href="<?php echo esc_url(add_query_arg('view', 'orders', self::url())); ?>">Về danh sách đơn</a></div><?php endif; ?>
+
+      <?php elseif ($view === 'new-product') : ?>
       <form method="post" enctype="multipart/form-data" class="create-layout" id="product-form">
         <?php wp_nonce_field('lwa_dashboard_product', 'lwa_nonce'); ?>
         <input type="hidden" name="lwa_form" value="product">

@@ -1,0 +1,18 @@
+# Override cho phát triển local: sửa theme/plugin dự án trên máy là thấy ngay,
+# không cần build lại image. KHÔNG dùng file này ở production.
+#
+#   docker compose -f compose.yaml -f compose.dev.yaml up --build
+#
+# Chỉ mount mã nguồn của dự án; WordPress core, WooCommerce, Storefront và SePay
+# vẫn lấy từ image nên không bị mất.
+
+services:
+  wordpress:
+    environment:
+      WP_ENVIRONMENT_TYPE: ${WP_ENVIRONMENT_TYPE:-development}
+      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG:-true}
+    volumes:
+      - ./wordpress/wp-content/themes/luxury-watches-child:/var/www/html/wp-content/themes/luxury-watches-child
+      - ./wordpress/wp-content/plugins/luxury-auctions:/var/www/html/wp-content/plugins/luxury-auctions
+      - ./wordpress/wp-content/plugins/luxury-chatbox:/var/www/html/wp-content/plugins/luxury-chatbox
+      - ./docker/php/dev.ini:/usr/local/etc/php/conf.d/zz-luxury-dev.ini:ro
