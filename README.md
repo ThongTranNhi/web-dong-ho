@@ -12,7 +12,18 @@ Website bán hàng và đấu giá đồng hồ xây dựng trên WordPress, Woo
 
 WordPress core, plugin bên thứ ba, cấu hình cơ sở dữ liệu, log và backup không được lưu trong Git.
 
-## Yêu cầu
+## Chạy bằng Docker (khuyến nghị)
+
+```bash
+cp .env.example .env      # đổi các mật khẩu trong .env
+docker compose up --build -d
+```
+
+Mở http://localhost:8000. Image đã gồm WordPress core, WooCommerce, Storefront, SePay Gateway (phiên bản cố định) cùng theme và plugin của dự án; database và uploads nằm trong volume nên không mất khi khởi động lại. Import database có sẵn, sao lưu, chuyển từ XAMPP và deploy lên Railway: xem [docs/DOCKER_DEPLOY.md](docs/DOCKER_DEPLOY.md).
+
+## Chạy bằng XAMPP
+
+### Yêu cầu
 
 - XAMPP hoặc môi trường có Apache, PHP và MySQL.
 - WordPress đã cài đặt trong thư mục `wordpress`.
