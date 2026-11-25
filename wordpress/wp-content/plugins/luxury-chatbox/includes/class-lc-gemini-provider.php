@@ -23,6 +23,21 @@ final class LC_Gemini_Provider implements LC_AI_Provider {
         return $this->api_key !== '' && preg_match('/\Agemini-[a-z0-9.\-]{1,56}\z/', $this->model) === 1;
     }
 
+    private static function clean_schema(array $schema) {
+        unset($schema['additionalProperties']);
+        if (isset($schema['properties']) && is_array($schema['properties'])) {
+            foreach ($schema['properties'] as $k => $v) {
+                if (is_array($v)) {
+                    $schema['properties'][$k] = self::clean_schema($v);
+                }
+            }
+        }
+        if (isset($schema['items']) && is_array($schema['items'])) {
+            $schema['items'] = self::clean_schema($schema['items']);
+        }
+        return $schema;
+    }
+
     public function generate($system, array $messages, array $schema) {
         if (!$this->is_configured()) {
             throw new LC_AI_Error('ai_not_configured', 'Trợ lý chưa được cấu hình. Vui lòng liên hệ cửa hàng.', false, 0, 'Missing API key or model.');
@@ -34,13 +49,20 @@ final class LC_Gemini_Provider implements LC_AI_Provider {
                 'parts' => [['text' => (string) $message['content']]],
             ];
         }
+        $is_v3 = strpos($this->model, 'gemini-3') === 0;
+        $gen_config = [
+            'maxOutputTokens' => self::MAX_TOKENS,
+        ];
+        if ($is_v3) {
+            $gen_config['responseFormat'] = ['text' => ['mimeType' => 'APPLICATION_JSON', 'schema' => $schema]];
+        } else {
+            $gen_config['responseMimeType'] = 'application/json';
+            $gen_config['responseSchema'] = self::clean_schema($schema);
+        }
         $body = [
             'systemInstruction' => ['parts' => [['text' => $system]]],
             'contents' => $contents,
-            'generationConfig' => [
-                'maxOutputTokens' => self::MAX_TOKENS,
-                'responseFormat' => ['text' => ['mimeType' => 'APPLICATION_JSON', 'schema' => $schema]],
-            ],
+            'generationConfig' => $gen_config,
         ];
         // Use the lowest supported reasoning level for short, grounded shop answers.
         // The retired 3.5 Flash alias is served by 3.6 Flash, which supports MINIMAL.
