@@ -2796,6 +2796,7 @@ body.woocommerce-checkout #page,
 body.woocommerce-checkout #content.site-content,
 body.woocommerce-checkout .site-content {
   background-color: #F8F7F4 !important;
+  padding-bottom: 96px !important;
 }
 
 .woocommerce-checkout #secondary,
@@ -2826,23 +2827,57 @@ body.woocommerce-checkout .site-content {
   float: none !important;
 }
 
+/* 1. Ép layout 2 cột chuẩn cho toàn bộ form checkout */
+form.woocommerce-checkout,
 .woocommerce-checkout .lw-checkout-columns {
   display: grid !important;
-  grid-template-columns: minmax(0, 1.25fr) minmax(380px, 440px) !important;
+  grid-template-columns: minmax(0, 1.45fr) minmax(380px, 1fr) !important;
   gap: 36px !important;
   align-items: start !important;
   width: 100% !important;
   margin-top: 20px !important;
 }
 
+form.woocommerce-checkout > .lw-checkout-columns {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+}
+
+/* 2. Đảm bảo khối thông báo lỗi/mã giảm giá không chiếm cột ở giữa */
+form.woocommerce-checkout > .woocommerce-NoticeGroup,
+form.woocommerce-checkout > .woocommerce-error,
+form.woocommerce-checkout > .woocommerce-message,
 .woocommerce-checkout .woocommerce-NoticeGroup,
 .woocommerce-checkout .woocommerce-NoticeGroup-checkout {
   grid-column: 1 / -1 !important;
   width: 100% !important;
 }
 
-.woocommerce-checkout .lw-checkout-col--details {
+/* 3. Reset triệt để width & float cũ của WooCommerce trên cả 2 cột */
+form.woocommerce-checkout #customer_details,
+form.woocommerce-checkout .col2-set,
+form.woocommerce-checkout #order_review,
+form.woocommerce-checkout .woocommerce-checkout-review-order,
+form.woocommerce-checkout .lw-checkout-col,
+form.woocommerce-checkout .lw-checkout-col--details,
+form.woocommerce-checkout .lw-checkout-col--review,
+form.woocommerce-checkout .lw-checkout-review-sticky,
+form.woocommerce-checkout .checkout-right-col,
+.woocommerce-checkout #customer_details,
+.woocommerce-checkout .col2-set,
+.woocommerce-checkout #order_review,
+.woocommerce-checkout .woocommerce-checkout-review-order,
+.woocommerce-checkout .lw-checkout-col,
+.woocommerce-checkout .lw-checkout-col--details,
+.woocommerce-checkout .lw-checkout-col--review,
+.woocommerce-checkout .lw-checkout-review-sticky {
   width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  float: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box !important;
 }
 
 .woocommerce-checkout .lw-checkout-box {
@@ -2851,6 +2886,8 @@ body.woocommerce-checkout .site-content {
   border-radius: 8px !important;
   padding: 36px 32px !important;
   box-shadow: 0 4px 20px rgba(15, 17, 21, 0.04) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .woocommerce-checkout .lw-checkout-box__header {
@@ -2899,6 +2936,7 @@ body.woocommerce-checkout .site-content {
 .woocommerce-checkout .lw-checkout-review-sticky {
   position: sticky !important;
   top: 24px !important;
+  width: 100% !important;
 }
 
 .woocommerce-checkout .lw-checkout-box--dark {
@@ -2910,6 +2948,9 @@ body.woocommerce-checkout .site-content {
   padding: 32px 28px !important;
   color: #CBD5E1 !important;
   box-shadow: 0 16px 45px rgba(15, 17, 21, 0.25) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
 .woocommerce-checkout .lw-checkout-box__header--dark {
@@ -2921,20 +2962,34 @@ body.woocommerce-checkout .site-content {
   display: none !important;
 }
 
-.woocommerce-checkout #order_review table.shop_table,
-.woocommerce-checkout #order_review table.shop_table thead,
-.woocommerce-checkout #order_review table.shop_table tbody,
-.woocommerce-checkout #order_review table.shop_table tfoot,
-.woocommerce-checkout #order_review table.shop_table tr,
-.woocommerce-checkout #order_review table.shop_table th,
-.woocommerce-checkout #order_review table.shop_table td {
+/* 4. Sửa lỗi vỡ chữ dọc (A U R) và tràn giá tiền trong bảng tóm tắt */
+#order_review table.woocommerce-checkout-review-order-table,
+#order_review table.shop_table,
+.woocommerce-checkout #order_review table.shop_table {
+  width: 100% !important;
+  table-layout: auto !important;
+  border-collapse: collapse !important;
   background: transparent !important;
   background-color: transparent !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
   color: #E2E8F0 !important;
 }
 
-.woocommerce-checkout #order_review table.shop_table th {
+#order_review table.woocommerce-checkout-review-order-table th,
+#order_review table.woocommerce-checkout-review-order-table td,
+#order_review table.shop_table th,
+#order_review table.shop_table td,
+.woocommerce-checkout #order_review table.shop_table th,
+.woocommerce-checkout #order_review table.shop_table td {
+  background: transparent !important;
+  background-color: transparent !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  vertical-align: middle !important;
+}
+
+#order_review table.woocommerce-checkout-review-order-table th,
+#order_review table.shop_table th {
   color: #C5A059 !important;
   font-size: 12px !important;
   font-weight: 700 !important;
@@ -2982,6 +3037,8 @@ body.woocommerce-checkout .site-content {
   font-weight: 600 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.03em !important;
+  white-space: normal !important;
+  word-break: normal !important;
 }
 
 .woocommerce-checkout .lw-review-product-qty {
@@ -2989,9 +3046,20 @@ body.woocommerce-checkout .site-content {
   font-size: 12px !important;
 }
 
+#order_review table.woocommerce-checkout-review-order-table .product-name,
+#order_review table.shop_table .product-name {
+  width: 65% !important;
+  padding-right: 12px !important;
+}
+
+#order_review table.woocommerce-checkout-review-order-table .product-total,
+#order_review table.woocommerce-checkout-review-order-table tfoot td,
+#order_review table.shop_table .product-total,
+#order_review table.shop_table tfoot td,
 .woocommerce-checkout .lw-review-price-cell,
 .woocommerce-checkout #order_review table.shop_table .product-total,
 .woocommerce-checkout #order_review table.shop_table td.product-total {
+  width: 35% !important;
   text-align: right !important;
   font-variant-numeric: tabular-nums !important;
   color: #C5A059 !important;
@@ -3051,9 +3119,12 @@ body.woocommerce-checkout .site-content {
   border-radius: 4px !important;
 }
 
-@media (max-width: 980px) {
+/* 5. Responsive cho Tablet & Mobile */
+@media (max-width: 992px) {
+  form.woocommerce-checkout,
   .woocommerce-checkout .lw-checkout-columns {
     grid-template-columns: 1fr !important;
+    gap: 24px !important;
   }
   .woocommerce-checkout .lw-checkout-review-sticky {
     position: static !important;
