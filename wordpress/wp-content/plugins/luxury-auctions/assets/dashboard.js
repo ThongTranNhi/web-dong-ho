@@ -61,3 +61,65 @@
     form.querySelectorAll('button[type="submit"]').forEach(button => button.setAttribute('aria-disabled', 'true'));
   });
 })();
+
+// Product form: live preview, price rules and single submission.
+(() => {
+  'use strict';
+  const form = document.querySelector('#product-form');
+  if (!form) return;
+  const $ = (selector) => form.querySelector(selector);
+  const name = $('#p-name');
+  const regular = $('#p-regular');
+  const sale = $('#p-sale');
+  const stock = $('#p-stock');
+  const upload = $('#p-image');
+  const image = $('#p-preview-image');
+  const placeholder = $('#p-preview-placeholder');
+  const money = (n) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
+  let imageUrl = '';
+
+  const render = () => {
+    $('#p-preview-title').textContent = name.value.trim() || 'Sản phẩm mới';
+    const r = Number(regular.value), s = Number(sale.value);
+    const price = s > 0 && s < r ? s : r;
+    $('#p-preview-price').textContent = price > 0 ? money(price) : '—';
+    const q = stock.value === '' ? NaN : Number(stock.value);
+    $('#p-preview-stock').textContent = Number.isInteger(q) ? (q > 0 ? `Còn hàng (${q} chiếc)` : 'Hết hàng') : '';
+    sale.setCustomValidity(sale.value !== '' && r > 0 && s >= r ? 'Giá khuyến mãi phải thấp hơn giá niêm yết.' : '');
+  };
+  [name, regular, sale, stock].forEach((el) => el.addEventListener('input', render));
+  render();
+
+  upload.addEventListener('change', () => {
+    if (imageUrl) URL.revokeObjectURL(imageUrl);
+    imageUrl = upload.files[0] ? URL.createObjectURL(upload.files[0]) : '';
+    image.hidden = !imageUrl;
+    placeholder.hidden = Boolean(imageUrl);
+    if (imageUrl) image.src = imageUrl; else image.removeAttribute('src');
+  });
+
+  let submitting = false;
+  form.addEventListener('submit', (event) => {
+    render();
+    const publishing = event.submitter && event.submitter.value === 'publish';
+    upload.setCustomValidity(publishing && !upload.files.length ? 'Cần ảnh sản phẩm trước khi đăng. Bạn có thể lưu nháp nếu chưa có ảnh.' : '');
+    if (!form.reportValidity() || submitting) { event.preventDefault(); return; }
+    submitting = true;
+    $('.submit-status').textContent = 'Đang lưu sản phẩm, vui lòng chờ…';
+    form.querySelectorAll('button[type="submit"]').forEach((button) => button.setAttribute('aria-disabled', 'true'));
+  });
+  upload.addEventListener('change', () => upload.setCustomValidity(''));
+})();
+
+// Product list: confirm before moving a product to the trash.
+(() => {
+  'use strict';
+  document.querySelectorAll('.js-trash-product').forEach((form) => {
+    let sent = false;
+    form.addEventListener('submit', (event) => {
+      const name = form.dataset.name || 'sản phẩm này';
+      if (sent || !window.confirm(`Xóa “${name}”?\n\nSản phẩm sẽ được chuyển vào thùng rác và biến mất khỏi cửa hàng. Bạn có thể hoàn tác ngay sau đó.`)) { event.preventDefault(); return; }
+      sent = true;
+    });
+  });
+})();

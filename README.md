@@ -72,6 +72,7 @@ Dữ liệu database (sản phẩm, đơn hàng, phiên đấu giá, hội tho�
 C:\xampp\php\php.exe scripts\tests\auction_bidding.php
 C:\xampp\php\php.exe scripts\tests\auction_confirmation.php
 C:\xampp\php\php.exe scripts\tests\auction_dashboard.php
+C:\xampp\php\php.exe scripts\tests\auction_dashboard_products.php
 C:\xampp\php\php.exe scripts\tests\auction_validation.php
 C:\xampp\php\php.exe scripts\tests\chatbox_backend.php
 node scripts\tests\chatbox_frontend.js   # cần Chrome và puppeteer-core (biến PUPPETEER_CORE)

@@ -10,6 +10,29 @@ $preview_image = $selected_product ? wp_get_attachment_image_url($selected_produ
 $now = current_datetime();
 $created = absint($_GET['created'] ?? 0);
 $created_post = $created ? get_post($created) : null;
+$pvalue = static function ($key, $default = '') use ($product_values) {
+    return isset($product_values[$key]) && is_scalar($product_values[$key]) ? (string) $product_values[$key] : $default;
+};
+$auction_collection = get_term_by('slug', 'bo-suu-tap-dau-gia', 'product_cat');
+$checked_collections = isset($product_values['collections']) ? array_map('intval', (array) $product_values['collections']) : ($auction_collection ? [(int) $auction_collection->term_id] : []);
+$product_created = absint($_GET['product_created'] ?? 0);
+$new_product = ($product_created && current_user_can('edit_post', $product_created)) ? wc_get_product($product_created) : null;
+$headings = [
+    'list' => ['Các phiên đấu giá', 'Theo dõi các phiên đã đăng và chuẩn bị những phiên tiếp theo.'],
+    'new' => ['Tạo phiên đấu giá', 'Chọn đồng hồ, thiết lập mức giá và sẵn sàng đón lượt trả đầu tiên.'],
+    'new-product' => ['Thêm sản phẩm', 'Đưa một chiếc đồng hồ mới vào cửa hàng, sau đó có thể mở phiên đấu giá cho nó.'],
+    'products' => ['Sản phẩm', 'Các đồng hồ đang có trong cửa hàng. Sản phẩm bị xóa được chuyển vào thùng rác và có thể khôi phục.'],
+];
+$trashed_id = absint($_GET['trashed'] ?? 0);
+$trashed_post = $trashed_id ? get_post($trashed_id) : null;
+$restored_id = absint($_GET['restored'] ?? 0);
+$restored_post = $restored_id ? get_post($restored_id) : null;
+$status_labels = ['publish' => 'Đang bán', 'draft' => 'Bản nháp', 'pending' => 'Chờ duyệt', 'private' => 'Riêng tư'];
+// Keeps search and page when an action returns to the list.
+$keep_fields = static function () use ($product_search, $product_page) {
+    if ($product_search !== '') echo '<input type="hidden" name="lwa_q" value="' . esc_attr($product_search) . '">';
+    if ($product_page > 1) echo '<input type="hidden" name="lwa_page" value="' . esc_attr($product_page) . '">';
+};
 ?>
 <!doctype html>
 <html lang="vi">
@@ -29,6 +52,8 @@ $created_post = $created ? get_post($created) : null;
     <nav aria-label="Điều hướng quản trị">
       <a href="<?php echo esc_url(self::url()); ?>" <?php if ($view === 'list') echo 'aria-current="page"'; ?>>Danh sách phiên</a>
       <a href="<?php echo esc_url(add_query_arg('view', 'new', self::url())); ?>" <?php if ($view === 'new') echo 'aria-current="page"'; ?>>Tạo phiên đấu giá</a>
+      <a href="<?php echo esc_url(add_query_arg('view', 'products', self::url())); ?>" <?php if ($view === 'products') echo 'aria-current="page"'; ?>>Sản phẩm</a>
+      <a href="<?php echo esc_url(add_query_arg('view', 'new-product', self::url())); ?>" <?php if ($view === 'new-product') echo 'aria-current="page"'; ?>>Thêm sản phẩm</a>
       <a href="<?php echo esc_url(home_url('/dau-gia/')); ?>" target="_blank" rel="noopener">Xem sàn đấu giá</a>
     </nav>
     <div class="sidebar-note"><strong>Một phiên, một lựa chọn.</strong><p>Thông tin rõ ràng giúp khách hàng tự tin tham gia.</p></div>
@@ -38,15 +63,88 @@ $created_post = $created ? get_post($created) : null;
     <header class="topbar"><span>Không gian quản trị / Đấu giá</span><div><span class="user-name"><?php echo esc_html($user->display_name); ?></span><a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>">Đăng xuất</a></div></header>
     <main id="dashboard-content">
       <header class="page-heading">
-        <div><p class="eyebrow">Luxury Watches</p><h1><?php echo $view === 'new' ? 'Tạo phiên đấu giá' : 'Các phiên đấu giá'; ?></h1><p><?php echo $view === 'new' ? 'Chọn đồng hồ, thiết lập mức giá và sẵn sàng đón lượt trả đầu tiên.' : 'Theo dõi các phiên đã đăng và chuẩn bị những phiên tiếp theo.'; ?></p></div>
+        <div><p class="eyebrow">Luxury Watches</p><h1><?php echo esc_html($headings[$view][0]); ?></h1><p><?php echo esc_html($headings[$view][1]); ?></p></div>
         <?php if ($view === 'list') : ?><a class="button" href="<?php echo esc_url(add_query_arg('view', 'new', self::url())); ?>">+ Tạo phiên mới</a><?php endif; ?>
+        <?php if ($view === 'products') : ?><a class="button" href="<?php echo esc_url(add_query_arg('view', 'new-product', self::url())); ?>">+ Thêm sản phẩm</a><?php endif; ?>
       </header>
+      <?php if ($trashed_post && $trashed_post->post_type === 'product' && $trashed_post->post_status === 'trash' && current_user_can('delete_post', $trashed_id)) : ?>
+        <div class="notice success" role="status">
+          Đã xóa sản phẩm “<?php echo esc_html($trashed_post->post_title); ?>” (chuyển vào thùng rác).
+          <form method="post" class="inline-form">
+            <?php wp_nonce_field('lwa_restore_product_' . $trashed_id, 'lwa_nonce'); ?>
+            <input type="hidden" name="lwa_form" value="restore_product"><input type="hidden" name="lwa_product_id" value="<?php echo esc_attr($trashed_id); ?>"><?php $keep_fields(); ?>
+            <button type="submit" class="link-button">Hoàn tác</button>
+          </form>
+        </div>
+      <?php endif; ?>
+      <?php if ($restored_post && $restored_post->post_type === 'product' && $restored_post->post_status !== 'trash') : ?>
+        <div class="notice success" role="status">Đã khôi phục sản phẩm “<?php echo esc_html($restored_post->post_title); ?>”.</div>
+      <?php endif; ?>
       <?php if ($error) : ?><div class="notice error" role="alert"><?php echo esc_html($error); ?></div><?php endif; ?>
       <?php if ($created_post && $created_post->post_type === 'watch_auction' && current_user_can('edit_post', $created)) : ?>
         <div class="notice success" role="status">Đã lưu phiên “<?php echo esc_html($created_post->post_title); ?>”. <?php if ($created_post->post_status === 'publish') : ?><a href="<?php echo esc_url(get_permalink($created)); ?>">Xem trên website</a><?php else : ?>Phiên đang ở trạng thái nháp. <a href="<?php echo esc_url(get_preview_post_link($created)); ?>">Xem trước</a><?php endif; ?></div>
       <?php endif; ?>
 
-      <?php if ($view === 'new') : ?>
+      <?php if ($new_product) : ?>
+        <div class="notice success" role="status">
+          Đã lưu sản phẩm “<?php echo esc_html($new_product->get_name()); ?>”<?php echo $new_product->get_status() === 'publish' ? ' và đăng lên cửa hàng.' : ' ở trạng thái nháp.'; ?>
+          <span class="notice-actions">
+            <?php if ($new_product->get_status() === 'publish') : ?>
+              <a class="button" href="<?php echo esc_url(add_query_arg(['view' => 'new', 'lwa_product' => $new_product->get_id()], self::url())); ?>">Tạo phiên đấu giá cho sản phẩm này</a>
+              <a href="<?php echo esc_url(get_permalink($new_product->get_id())); ?>" target="_blank" rel="noopener">Xem trên cửa hàng</a>
+            <?php else : ?>
+              <span>Đăng sản phẩm trước khi tạo phiên đấu giá.</span>
+            <?php endif; ?>
+            <a href="<?php echo esc_url(get_edit_post_link($new_product->get_id())); ?>">Chỉnh sửa chi tiết</a>
+          </span>
+        </div>
+      <?php endif; ?>
+
+      <?php if ($view === 'new-product') : ?>
+      <form method="post" enctype="multipart/form-data" class="create-layout" id="product-form">
+        <?php wp_nonce_field('lwa_dashboard_product', 'lwa_nonce'); ?>
+        <input type="hidden" name="lwa_form" value="product">
+        <input type="hidden" name="submission" value="<?php echo esc_attr($submission); ?>">
+        <div class="form-sections">
+          <section class="panel" aria-labelledby="p-info-heading">
+            <div class="section-heading"><span class="step">1</span><div><h2 id="p-info-heading">Thông tin đồng hồ</h2><p>Tên và mô tả khách hàng sẽ thấy trên trang sản phẩm.</p></div></div>
+            <label for="p-name">Tên sản phẩm <span aria-hidden="true">*</span></label>
+            <input id="p-name" name="lwa_product[name]" value="<?php echo esc_attr($pvalue('name')); ?>" required maxlength="200" placeholder="Ví dụ: Aurelius Deepsea GMT">
+            <div class="field-grid">
+              <div><label for="p-sku">SKU</label><input id="p-sku" name="lwa_product[sku]" value="<?php echo esc_attr($pvalue('sku')); ?>" maxlength="64" pattern="[A-Za-z0-9._\-]+" placeholder="Ví dụ: LW-AUC-GMT-02" aria-describedby="p-sku-help"></div>
+              <div><label for="p-gender">Phân loại</label><select id="p-gender" name="lwa_product[gender]"><?php foreach (['dong-ho-nam' => 'Đồng hồ nam', 'dong-ho-nu' => 'Đồng hồ nữ', 'unisex' => 'Thiết kế unisex'] as $slug => $label) : ?><option value="<?php echo esc_attr($slug); ?>" <?php selected($pvalue('gender', 'dong-ho-nam'), $slug); ?>><?php echo esc_html($label); ?></option><?php endforeach; ?></select></div>
+            </div>
+            <p class="help" id="p-sku-help">Mã nội bộ, không trùng với sản phẩm khác. Có thể bỏ trống.</p>
+            <label for="p-short">Mô tả ngắn</label><textarea id="p-short" name="lwa_product[short_description]" rows="2" placeholder="Một hai câu nêu điểm nổi bật, hiển thị cạnh giá."><?php echo esc_textarea($pvalue('short_description')); ?></textarea>
+            <label for="p-desc">Mô tả chi tiết</label><textarea id="p-desc" name="lwa_product[description]" rows="5" placeholder="Kích thước vỏ (mm), bộ máy, chất liệu, chống nước, phụ kiện đi kèm."><?php echo esc_textarea($pvalue('description')); ?></textarea>
+            <p class="help">Ghi kích thước vỏ theo dạng “Vỏ thép 40 mm” để chatbot tư vấn đúng theo kích thước.</p>
+          </section>
+          <section class="panel" aria-labelledby="p-price-heading">
+            <div class="section-heading"><span class="step">2</span><div><h2 id="p-price-heading">Giá và tồn kho</h2><p>Đơn vị VND, nhập số nguyên.</p></div></div>
+            <div class="field-grid">
+              <div><label for="p-regular">Giá niêm yết <span aria-hidden="true">*</span></label><input type="number" inputmode="numeric" id="p-regular" name="lwa_product[regular_price]" min="1" step="1" value="<?php echo esc_attr($pvalue('regular_price')); ?>" required></div>
+              <div><label for="p-sale">Giá khuyến mãi</label><input type="number" inputmode="numeric" id="p-sale" name="lwa_product[sale_price]" min="1" step="1" value="<?php echo esc_attr($pvalue('sale_price')); ?>" aria-describedby="p-sale-help"></div>
+              <div><label for="p-stock">Số lượng tồn kho <span aria-hidden="true">*</span></label><input type="number" inputmode="numeric" id="p-stock" name="lwa_product[stock]" min="0" max="100000" step="1" value="<?php echo esc_attr($pvalue('stock', '1')); ?>" required></div>
+            </div>
+            <p class="help" id="p-sale-help">Bỏ trống nếu không giảm giá. Giá khuyến mãi phải thấp hơn giá niêm yết. Tồn kho bằng 0 sẽ hiển thị “Hết hàng”.</p>
+          </section>
+          <section class="panel" aria-labelledby="p-cat-heading">
+            <div class="section-heading"><span class="step">3</span><div><h2 id="p-cat-heading">Bộ sưu tập và ảnh</h2><p>Nơi sản phẩm xuất hiện trên cửa hàng.</p></div></div>
+            <fieldset class="checks"><legend>Bộ sưu tập</legend>
+              <?php foreach ($collections as $term) : ?>
+                <label class="check"><input type="checkbox" name="lwa_product[collections][]" value="<?php echo esc_attr($term->term_id); ?>" <?php checked(in_array((int) $term->term_id, $checked_collections, true)); ?>> <?php echo esc_html($term->name); ?></label>
+              <?php endforeach; ?>
+            </fieldset>
+            <p class="help">“Bộ sưu tập đấu giá” dành cho đồng hồ bán qua phiên đấu giá; chatbot sẽ không gợi ý mua trực tiếp những mẫu này.</p>
+            <label for="p-image">Ảnh sản phẩm <span class="label-note">(bắt buộc khi đăng)</span></label><input id="p-image" type="file" name="product_image" accept="image/jpeg,image/png,image/webp"><p class="help">JPG, PNG hoặc WebP, tối đa <?php echo esc_html(size_format(wp_max_upload_size())); ?>. Khi biểu mẫu báo lỗi, hãy chọn lại file ảnh.</p>
+          </section>
+        </div>
+        <aside class="publish-panel">
+          <section class="panel preview"><p class="eyebrow">Xem nhanh sản phẩm</p><div class="preview-image"><img id="p-preview-image" alt="Ảnh sản phẩm" hidden><span id="p-preview-placeholder">Chọn ảnh để xem trước</span></div><h2 id="p-preview-title"><?php echo esc_html($pvalue('name') ?: 'Sản phẩm mới'); ?></h2><p class="help">Giá bán</p><strong class="preview-price" id="p-preview-price">—</strong><p class="help" id="p-preview-stock"></p></section>
+          <section class="panel publish-box"><h2>Sẵn sàng đăng?</h2><p class="help">Sản phẩm được đăng sẽ hiển thị ngay trên cửa hàng và có thể dùng để tạo phiên đấu giá.</p><button class="button" type="submit" name="lwa_product[status]" value="publish">Đăng sản phẩm</button><button class="button secondary" type="submit" name="lwa_product[status]" value="draft">Lưu nháp</button><p class="help submit-status" role="status"></p></section>
+        </aside>
+      </form>
+      <?php elseif ($view === 'new') : ?>
       <form method="post" enctype="multipart/form-data" class="create-layout" id="auction-form">
         <?php wp_nonce_field('lwa_dashboard_create', 'lwa_nonce'); ?>
         <input type="hidden" name="submission" value="<?php echo esc_attr($submission); ?>">
@@ -63,6 +161,7 @@ $created_post = $created ? get_post($created) : null;
               <?php endforeach; ?>
             </select>
             <p class="help" id="product-search-status" aria-live="polite">Chọn sản phẩm để lấy tên, giá niêm yết và ảnh có sẵn.</p>
+            <p class="help">Đồng hồ chưa có trong cửa hàng? <a href="<?php echo esc_url(add_query_arg('view', 'new-product', self::url())); ?>">Thêm sản phẩm mới</a></p>
           </section>
           <section class="panel" aria-labelledby="details-heading">
             <div class="section-heading"><span class="step">2</span><div><h2 id="details-heading">Thông tin phiên</h2><p>Những gì khách hàng sẽ thấy trên sàn đấu giá.</p></div></div>
@@ -93,6 +192,52 @@ $created_post = $created ? get_post($created) : null;
           <section class="panel publish-box"><h2>Sẵn sàng công bố?</h2><p class="help">Kiểm tra sản phẩm, ảnh và giờ kết thúc trước khi đăng. Khách chỉ trả giá khi phiên đang mở.</p><button class="button" type="submit" name="auction[status]" value="publish">Đăng phiên đấu giá</button><button class="button secondary" type="submit" name="auction[status]" value="draft">Lưu nháp</button><p class="help submit-status" role="status"></p></section>
         </aside>
       </form>
+      <?php elseif ($view === 'products') : ?>
+      <section class="panel auction-list" aria-label="Danh sách sản phẩm">
+        <div class="list-heading">
+          <h2>Sản phẩm trong cửa hàng</h2>
+          <form method="get" action="<?php echo esc_url(self::url()); ?>" class="list-search" role="search">
+            <input type="hidden" name="view" value="products">
+            <label class="sr-only" for="lwa-q">Tìm sản phẩm</label>
+            <input id="lwa-q" type="search" name="lwa_q" value="<?php echo esc_attr($product_search); ?>" placeholder="Tìm theo tên hoặc SKU">
+            <button class="button secondary" type="submit">Tìm</button>
+          </form>
+          <span><?php echo esc_html($product_query->found_posts); ?> sản phẩm</span>
+        </div>
+        <?php if ($product_query->posts) : ?>
+          <div class="table-wrap"><table><thead><tr><th>Sản phẩm</th><th>Trạng thái</th><th>Giá bán</th><th>Tồn kho</th><th>Bộ sưu tập</th><th>Thao tác</th></tr></thead><tbody>
+          <?php foreach ($product_query->posts as $post) : $item = wc_get_product($post->ID); if (!$item) continue; $thumb = wp_get_attachment_image_url($item->get_image_id(), 'thumbnail'); $linked = self::linked_auctions($item->get_id()); $cats = wp_get_post_terms($item->get_id(), 'product_cat', ['fields' => 'names']); ?>
+            <tr>
+              <td><div class="auction-name"><?php if ($thumb) : ?><img src="<?php echo esc_url($thumb); ?>" alt=""><?php else : ?><span class="thumb-empty" aria-hidden="true"></span><?php endif; ?><div><strong><?php echo esc_html($item->get_name()); ?></strong><small><?php echo esc_html($item->get_sku() ?: 'Chưa có SKU'); ?></small><?php if ($linked) : ?><small class="linked">Đang dùng trong <?php echo esc_html(count($linked)); ?> phiên đấu giá</small><?php endif; ?></div></div></td>
+              <td><span class="badge <?php echo esc_attr($item->get_status() === 'publish' ? 'live' : 'draft'); ?>"><?php echo esc_html($status_labels[$item->get_status()] ?? $item->get_status()); ?></span></td>
+              <td><?php echo esc_html(number_format((float) $item->get_price(), 0, ',', '.')); ?> ₫<?php if ($item->is_on_sale()) : ?><small class="was"><?php echo esc_html(number_format((float) $item->get_regular_price(), 0, ',', '.')); ?> ₫</small><?php endif; ?></td>
+              <td><?php echo $item->is_in_stock() ? esc_html($item->managing_stock() ? 'Còn ' . (int) $item->get_stock_quantity() : 'Còn hàng') : '<span class="out">Hết hàng</span>'; ?></td>
+              <td class="cats"><?php echo esc_html(implode(', ', $cats)); ?></td>
+              <td class="actions">
+                <?php if ($item->get_status() === 'publish') : ?><a href="<?php echo esc_url(get_permalink($item->get_id())); ?>" target="_blank" rel="noopener">Xem</a><a href="<?php echo esc_url(add_query_arg(['view' => 'new', 'lwa_product' => $item->get_id()], self::url())); ?>">Tạo phiên</a><?php endif; ?>
+                <a href="<?php echo esc_url(get_edit_post_link($item->get_id())); ?>">Sửa</a>
+                <?php if (current_user_can('delete_post', $item->get_id())) : ?>
+                  <?php if ($linked) : ?>
+                    <button type="button" class="link-button danger" disabled title="Sản phẩm đang dùng trong phiên đấu giá nên không thể xóa">Xóa</button>
+                  <?php else : ?>
+                    <form method="post" class="inline-form js-trash-product" data-name="<?php echo esc_attr($item->get_name()); ?>">
+                      <?php wp_nonce_field('lwa_trash_product_' . $item->get_id(), 'lwa_nonce'); ?>
+                      <input type="hidden" name="lwa_form" value="trash_product"><input type="hidden" name="lwa_product_id" value="<?php echo esc_attr($item->get_id()); ?>"><?php $keep_fields(); ?>
+                      <button type="submit" class="link-button danger" aria-label="Xóa <?php echo esc_attr($item->get_name()); ?>">Xóa</button>
+                    </form>
+                  <?php endif; ?>
+                <?php endif; ?>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody></table></div>
+          <nav class="pagination" aria-label="Trang danh sách sản phẩm"><?php echo wp_kses_post(paginate_links(['base' => add_query_arg(array_filter(['view' => 'products', 'lwa_q' => $product_search, 'lwa_page' => '%#%']), self::url()), 'format' => '', 'total' => $product_query->max_num_pages, 'current' => $product_page, 'prev_text' => 'Trước', 'next_text' => 'Tiếp'])); ?></nav>
+        <?php elseif ($product_search !== '') : ?>
+          <div class="empty"><h3>Không tìm thấy sản phẩm phù hợp</h3><p>Thử tìm với tên khác hoặc một phần SKU.</p><a class="button secondary" href="<?php echo esc_url(add_query_arg('view', 'products', self::url())); ?>">Xem tất cả sản phẩm</a></div>
+        <?php else : ?>
+          <div class="empty"><h3>Cửa hàng chưa có sản phẩm</h3><p>Thêm chiếc đồng hồ đầu tiên để bắt đầu bán hoặc mở phiên đấu giá.</p><a class="button" href="<?php echo esc_url(add_query_arg('view', 'new-product', self::url())); ?>">Thêm sản phẩm</a></div>
+        <?php endif; ?>
+      </section>
       <?php else : ?>
       <section class="panel auction-list" aria-label="Danh sách phiên đấu giá">
         <div class="list-heading"><h2>Phiên đã tạo</h2><span><?php echo esc_html($query->found_posts); ?> phiên</span></div>
