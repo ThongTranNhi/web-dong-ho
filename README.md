@@ -57,12 +57,21 @@ define('DB_HOST', 'localhost');
 // Chỉ khi chạy bằng PHP built-in server (php -S localhost:8000):
 // define('WP_HOME', 'http://localhost:8000');
 // define('WP_SITEURL', 'http://localhost:8000');
-
-// Chatbot Gemini: key lấy tại Google AI Studio, không commit.
-define('LUXURY_CHATBOX_GEMINI_KEY', 'your-gemini-api-key');
 ```
 
-Có thể dùng biến môi trường `GEMINI_API_KEY` thay cho hằng số. Sau đó vào WP Admin → **Chatbox** để bật chatbot, chọn model (đang dùng `gemini-3.5-flash`, timeout 60 giây) và model dự phòng nếu có. Chi tiết API và cấu hình: `docs/CHATBOX_API.md`.
+**API key Gemini nằm trong file `.env`** ở thư mục gốc dự án (cạnh `README.md`), cũng bị Git bỏ qua. Tạo file này từ mẫu rồi điền key lấy tại Google AI Studio:
+
+```powershell
+copy .env.example .env
+```
+
+```dotenv
+GEMINI_API_KEY=your-gemini-api-key
+```
+
+Khi chạy bằng `php -S` trong thư mục `wordpress`, file `.env` nằm ngoài thư mục web. Khi đặt dự án trong `htdocs` của Apache, file `.htaccess` ở thư mục gốc chặn truy cập `.env` qua trình duyệt. Trên server (Docker/Railway), đặt biến môi trường `GEMINI_API_KEY` thay cho file. Thứ tự ưu tiên: hằng số `LUXURY_CHATBOX_GEMINI_KEY` trong `wp-config.php` (nếu có), rồi biến môi trường, rồi file `.env`.
+
+Sau đó vào WP Admin → **Chatbox** để bật chatbot, chọn model (đang dùng `gemini-3.5-flash`, timeout 60 giây) và model dự phòng nếu có. Chi tiết API và cấu hình: `docs/CHATBOX_API.md`.
 
 Dữ liệu database (sản phẩm, đơn hàng, phiên đấu giá, hội thoại) không nằm trong Git. Dùng các script ở trên để tạo dữ liệu mẫu, hoặc nhập bản export SQL được chia sẻ riêng.
 

@@ -1,0 +1,5 @@
+# Block web access to local secret files when the project folder sits inside
+# Apache's document root (e.g. C:\xampp\htdocs\luxury-watches).
+<FilesMatch "^\.env">
+    Require all denied
+</FilesMatch>

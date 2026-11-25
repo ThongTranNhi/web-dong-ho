@@ -65,14 +65,15 @@ Chỉ mục: `UNIQUE conversation_request_role (conversation_id, request_id, rol
 
 ### API key
 
-Key chỉ được đọc phía máy chủ, không lưu trong database, không đưa vào Git, frontend hay phản hồi API. Chọn một trong hai cách:
+Key chỉ được đọc phía máy chủ, không lưu trong database, không đưa vào Git, frontend hay phản hồi API. Cách khuyến nghị là file `.env` ở thư mục gốc dự án (tạo từ `.env.example`, bị Git bỏ qua):
 
-```php
-// wp-config.php (file này đã nằm trong .gitignore)
-define('LUXURY_CHATBOX_GEMINI_KEY', 'YOUR_GEMINI_API_KEY');
+```dotenv
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
 ```
 
-hoặc biến môi trường `GEMINI_API_KEY` của tiến trình PHP. Hằng số trong `wp-config.php` được ưu tiên.
+Plugin chỉ đọc đúng biến `GEMINI_API_KEY` trong file (hỗ trợ comment `#`, dấu nháy, `export`), không nạp các biến khác vào môi trường. Đổi đường dẫn file bằng `define('LUXURY_CHATBOX_ENV_FILE', '...')`. File `.htaccess` ở thư mục gốc chặn tải `.env` khi dự án nằm trong document root của Apache.
+
+Thứ tự ưu tiên: hằng số `LUXURY_CHATBOX_GEMINI_KEY` trong `wp-config.php`, biến môi trường `GEMINI_API_KEY` của tiến trình PHP (dùng cho Docker/Railway), rồi file `.env`. Kiểm thử: `scripts/tests/chatbox_env.php`.
 
 ### WP Admin → Chatbox
 

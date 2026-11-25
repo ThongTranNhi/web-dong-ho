@@ -72,7 +72,7 @@ final class LC_Admin {
           <table class="widefat striped" style="max-width:760px">
             <tbody>
               <tr><td>Chatbot</td><td><?php echo $s['enabled'] ? '<strong style="color:#008a20">Đang bật</strong>' : '<strong style="color:#b32d2e">Đang tắt</strong>'; ?></td></tr>
-              <tr><td>API key Gemini</td><td><?php echo $key !== '' ? 'Đã cấu hình (nguồn: ' . esc_html($source) . ')' : '<strong style="color:#b32d2e">Chưa cấu hình</strong>: thêm <code>define(\'LUXURY_CHATBOX_GEMINI_KEY\', \'...\');</code> vào wp-config.php hoặc biến môi trường <code>GEMINI_API_KEY</code>.'; ?></td></tr>
+              <tr><td>API key Gemini</td><td><?php echo $key !== '' ? 'Đã cấu hình (nguồn: ' . esc_html($source) . ')' : '<strong style="color:#b32d2e">Chưa cấu hình</strong>: thêm dòng <code>GEMINI_API_KEY=...</code> vào file <code>.env</code> ở thư mục gốc dự án (xem <code>.env.example</code>), hoặc đặt biến môi trường <code>GEMINI_API_KEY</code>.'; ?></td></tr>
               <tr><td>Model</td><td><code><?php echo esc_html($s['model']); ?></code> · dự phòng khi gặp 503: <?php echo $s['fallback_model'] !== '' ? '<code>' . esc_html($s['fallback_model']) . '</code>' : 'chưa cấu hình'; ?> · chờ AI tối đa <?php echo esc_html(LC_Settings::max_ai_seconds()); ?> giây</td></tr>
               <tr><td>Plugin đấu giá</td><td><?php echo method_exists('Luxury_Watches_Auctions', 'snapshot') ? 'Đã kết nối' : 'Chưa kết nối (chatbot sẽ báo thiếu dữ liệu đấu giá)'; ?></td></tr>
               <tr><td>WooCommerce</td><td><?php echo function_exists('wc_get_products') ? 'Đã kết nối' : 'Chưa kích hoạt'; ?></td></tr>

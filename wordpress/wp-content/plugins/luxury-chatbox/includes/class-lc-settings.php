@@ -92,6 +92,47 @@ final class LC_Settings {
         }
         $env = getenv('GEMINI_API_KEY');
         if (is_string($env) && $env !== '') return [$env, 'biến môi trường'];
+        $file = self::env_file_value('GEMINI_API_KEY');
+        if ($file !== '') return [$file, 'file .env'];
         return ['', ''];
+    }
+
+    /**
+     * Path of the project's .env file: the folder that contains wordpress/
+     * (outside the web root when WordPress is served from wordpress/).
+     * Override with define('LUXURY_CHATBOX_ENV_FILE', '/path/to/.env').
+     */
+    public static function env_file_path() {
+        if (defined('LUXURY_CHATBOX_ENV_FILE') && is_string(LUXURY_CHATBOX_ENV_FILE)) return LUXURY_CHATBOX_ENV_FILE;
+        return dirname(untrailingslashit(ABSPATH)) . DIRECTORY_SEPARATOR . '.env';
+    }
+
+    /**
+     * Reads one variable from the .env file (KEY=value lines, # comments,
+     * optional quotes and "export "). Nothing is added to the process
+     * environment, so other code never sees the file's contents.
+     */
+    public static function env_file_value($name) {
+        static $values = null;
+        if ($values === null) {
+            $values = [];
+            $path = self::env_file_path();
+            if (is_readable($path) && filesize($path) < 65536) {
+                foreach ((array) file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+                    $line = trim((string) $line);
+                    if ($line === '' || $line[0] === '#') continue;
+                    if (strpos($line, 'export ') === 0) $line = trim(substr($line, 7));
+                    if (!preg_match('/\A([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\z/', $line, $m)) continue;
+                    $value = $m[2];
+                    if (preg_match('/\A"(.*)"\z/', $value, $q) || preg_match("/\\A'(.*)'\\z/", $value, $q)) {
+                        $value = $q[1];
+                    } else {
+                        $value = trim(preg_replace('/\s+#.*\z/', '', $value)); // inline comment
+                    }
+                    $values[$m[1]] = $value;
+                }
+            }
+        }
+        return isset($values[$name]) && is_string($values[$name]) ? $values[$name] : '';
     }
 }

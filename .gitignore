@@ -2,6 +2,8 @@
 /*
 !/.gitignore
 !/README.md
+!/.env.example
+!/.htaccess
 !/docs/
 !/docs/**
 !/scripts/
@@ -53,6 +55,10 @@
 
 # Local secrets, generated archives, caches and logs.
 wp-config.php
+# Local secrets (API keys). Only the template .env.example is tracked.
+.env
+.env.*
+!/.env.example
 *.log
 *.sql
 *.zip
