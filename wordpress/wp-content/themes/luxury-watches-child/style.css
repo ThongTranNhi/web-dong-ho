@@ -2265,3 +2265,812 @@ a.added_to_cart.wc-forward,
 .site-footer {
     margin-bottom: 0 !important;
 }
+
+/* ==========================================================================
+   HAUTE HORLOGERIE SINGLE AUCTION EXPERIENCE (LUXURY ENTERPRISE REDESIGN)
+   Applied across all watch auctions
+   ========================================================================== */
+
+/* Full-width canvas on single auction pages */
+body.single-watch_auction {
+    background-color: #F8F7F4 !important;
+}
+.single-watch_auction .site-content > .col-full {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.single-watch_auction #primary {
+    width: 100% !important;
+    float: none !important;
+    margin: 0 !important;
+}
+.single-watch_auction .site-main {
+    padding-top: 0 !important;
+}
+
+.lw-single-auction-wrapper {
+    background: #F8F7F4;
+    width: 100%;
+    padding: 18px 0 72px;
+    font-family: "Plus Jakarta Sans", "Inter", -apple-system, sans-serif;
+    color: #0F1115;
+}
+.lw-single-auction-container {
+    max-width: 1260px;
+    margin: 0 auto;
+    padding: 0 24px;
+    box-sizing: border-box;
+}
+
+/* 1. Breadcrumb & Notice */
+.lw-auction-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.84rem;
+    color: #78716C;
+    margin-bottom: 24px;
+}
+.lw-auction-breadcrumb a {
+    color: #78716C;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+.lw-auction-breadcrumb a:hover {
+    color: #C5A059;
+}
+.lw-bc-sep {
+    color: #C5A059;
+    opacity: 0.6;
+}
+.lw-bc-current {
+    color: #0F1115;
+    font-weight: 600;
+}
+
+.lw-single-bid-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+.lw-single-bid-notice strong {
+    display: block;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+}
+.lw-single-bid-notice p {
+    margin: 0;
+}
+.lw-notice--success {
+    background: #F4F8F5;
+    border: 1px solid #C8E2D0;
+    color: #1A532C;
+}
+.lw-notice--warning, .lw-notice--error {
+    background: #FFF9ED;
+    border: 1px solid #F3DBA7;
+    color: #8C530A;
+}
+
+/* 2. Main 2-Column Split Layout */
+.lw-single-auction-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.22fr) minmax(380px, 0.98fr);
+    gap: 40px;
+    align-items: start;
+}
+
+/* Cột Trái: Showcase & Thông số */
+.lw-auction-left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* Khung Ảnh Showcase */
+.lw-auction-hero-gallery {
+    position: relative;
+    background: #FFFFFF;
+    border: 1px solid #E5E2DC;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 10px 30px rgba(15, 17, 21, 0.05);
+    overflow: hidden;
+}
+.lw-gallery-badges {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: none;
+    z-index: 2;
+}
+.lw-badge-lot {
+    display: inline-block;
+    padding: 5px 12px;
+    background: #0F1115;
+    color: #C5A059;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    border-radius: 999px;
+    border: 1px solid rgba(197, 160, 89, 0.4);
+}
+.lw-badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 13px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 999px;
+}
+.lw-status--live {
+    background: #E8F5E9;
+    color: #1E6B37;
+    border: 1px solid #B7E1CD;
+}
+.lw-status--upcoming {
+    background: #FFF8E1;
+    color: #8D5B00;
+    border: 1px solid #FFE082;
+}
+.lw-status--ended {
+    background: #ECEFF1;
+    color: #546E7A;
+    border: 1px solid #CFD8DC;
+}
+.lw-pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    display: inline-block;
+    animation: lw-pulse 1.6s infinite ease-in-out;
+}
+@keyframes lw-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.3); }
+}
+
+.lw-gallery-main-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 420px;
+    padding: 20px 0;
+}
+.lw-gallery-main-image img {
+    max-height: 460px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.lw-gallery-main-image:hover img {
+    transform: scale(1.03);
+}
+.lw-gallery-caption {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #F0ECE1;
+    text-align: center;
+}
+.lw-caption-cert {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #78716C;
+}
+
+/* Trust Strip */
+.lw-auction-trust-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    background: #FFFFFF;
+    border: 1px solid #E5E2DC;
+    border-radius: 14px;
+    padding: 18px 20px;
+}
+.lw-trust-strip-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.lw-trust-strip-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(197, 160, 89, 0.12);
+    display: grid;
+    place-items: center;
+}
+.lw-trust-strip-item strong {
+    display: block;
+    font-size: 0.86rem;
+    color: #0F1115;
+    line-height: 1.25;
+}
+.lw-trust-strip-item span {
+    font-size: 0.76rem;
+    color: #78716C;
+}
+
+/* Specs & Story Cards */
+.lw-auction-specs-card,
+.lw-auction-story-card {
+    background: #FFFFFF;
+    border: 1px solid #E5E2DC;
+    border-radius: 16px;
+    padding: 28px 32px;
+    box-shadow: 0 8px 24px rgba(15, 17, 21, 0.04);
+}
+.lw-card-section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.35rem;
+    color: #0F1115;
+    margin: 0 0 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #F0ECE1;
+}
+.lw-card-section-title span {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #0F1115;
+    color: #C5A059;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 0.74rem;
+    font-weight: 700;
+    border: 1px solid #C5A059;
+}
+.lw-specs-table-grid {
+    display: flex;
+    flex-direction: column;
+}
+.lw-spec-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    border-bottom: 1px solid #F5F3ED;
+    font-size: 0.88rem;
+}
+.lw-spec-row:nth-child(even) {
+    background: #FAF9F6;
+    border-radius: 6px;
+}
+.lw-spec-label {
+    color: #78716C;
+}
+.lw-spec-value {
+    color: #0F1115;
+    font-weight: 600;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+.lw-reserve-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+.lw-reserve-tag.is-met {
+    background: #E8F5E9;
+    color: #1E6B37;
+}
+.lw-reserve-tag.is-unmet {
+    background: #FFF8E1;
+    color: #8D5B00;
+}
+.lw-story-prose {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: #333942;
+}
+.lw-story-prose p {
+    margin: 0 0 16px;
+}
+
+/* ==========================================================================
+   3. CỘT PHẢI: BÀN ĐIỀU KHIỂN ĐẤU GIÁ OBSIDIAN GOLD (STICKY CONSOLE)
+   ========================================================================== */
+.lw-auction-right-col {
+    position: sticky;
+    top: 92px;
+    z-index: 10;
+}
+
+.lw-bidding-console-card {
+    background: #0B0D12;
+    border: 1px solid rgba(197, 160, 89, 0.45);
+    border-radius: 18px;
+    padding: 32px 30px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    color: #FFFFFF;
+}
+
+/* Console Header */
+.lw-console-head {
+    margin-bottom: 22px;
+}
+.lw-console-kicker {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #C5A059;
+    margin-bottom: 10px;
+}
+.lw-lot-pill {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(197, 160, 89, 0.15);
+    border: 1px solid rgba(197, 160, 89, 0.4);
+    color: #F3E5C8;
+}
+.lw-console-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 1.25;
+    margin: 0 0 8px;
+}
+.lw-console-sub {
+    font-size: 0.84rem;
+    color: #9CA3AF;
+    margin: 0;
+}
+
+/* VIP Countdown Box */
+.lw-console-countdown-box {
+    background: #141720;
+    border: 1px solid rgba(197, 160, 89, 0.25);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 22px;
+}
+.lw-cd-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.lw-cd-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #C5A059;
+    letter-spacing: 0.05em;
+}
+.lw-live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.74rem;
+    color: #34D399;
+}
+.lw-ping {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #34D399;
+    box-shadow: 0 0 8px #34D399;
+}
+.lw-cd-display {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+}
+
+/* Price Panel */
+.lw-console-price-panel {
+    background: #141720;
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    border-radius: 14px;
+    padding: 22px 20px 18px;
+    margin-bottom: 24px;
+}
+.lw-cp-caption {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #C5A059;
+    margin-bottom: 6px;
+}
+.lw-cp-main-price {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 2.3rem;
+    font-weight: 700;
+    color: #C5A059;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    font-variant-numeric: tabular-nums;
+}
+.lw-cp-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.lw-cp-meta-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.lw-meta-name {
+    font-size: 0.72rem;
+    color: #9CA3AF;
+}
+.lw-meta-val {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #FFFFFF;
+    font-variant-numeric: tabular-nums;
+}
+.lw-meta-val.highlight {
+    color: #F3E5C8;
+}
+
+/* Form Trả Giá */
+.lw-console-action-box {
+    margin-bottom: 26px;
+}
+.lw-bid-form-custom {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.lw-bid-input-wrap label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #E5E7EB;
+    margin-bottom: 8px;
+}
+.lw-bid-input-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.lw-bid-input-row input {
+    width: 100% !important;
+    height: 52px !important;
+    background: #141720 !important;
+    border: 1px solid rgba(197, 160, 89, 0.45) !important;
+    border-radius: 10px !important;
+    color: #FFFFFF !important;
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    font-variant-numeric: tabular-nums !important;
+    padding: 0 60px 0 16px !important;
+    outline: none !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+.lw-bid-input-row input:focus {
+    border-color: #C5A059 !important;
+    box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.25) !important;
+}
+.lw-bid-currency {
+    position: absolute;
+    right: 18px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #C5A059;
+    pointer-events: none;
+}
+
+/* Quick Presets */
+.lw-quick-presets {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.lw-presets-title {
+    font-size: 0.78rem;
+    color: #9CA3AF;
+}
+.lw-preset-btn {
+    padding: 6px 12px;
+    background: #141720;
+    border: 1px solid rgba(197, 160, 89, 0.35);
+    border-radius: 8px;
+    color: #E5E7EB;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.lw-preset-btn:hover {
+    background: rgba(197, 160, 89, 0.2);
+    border-color: #C5A059;
+    color: #FFFFFF;
+}
+
+/* Submit Button */
+.lw-bid-submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    height: 54px;
+    background: #C5A059 !important;
+    color: #0F1115 !important;
+    font-size: 0.95rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.08em !important;
+    border: none !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    box-shadow: 0 8px 24px rgba(197, 160, 89, 0.3) !important;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s !important;
+}
+.lw-bid-submit-btn:hover {
+    background: #D8B26E !important;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(197, 160, 89, 0.45) !important;
+}
+.lw-bid-hint-text {
+    font-size: 0.74rem;
+    color: #9CA3AF;
+    line-height: 1.45;
+    margin: 0;
+}
+.lw-bid-hint-text strong {
+    color: #C5A059;
+}
+
+/* Login CTA & Status Cards */
+.lw-console-login-cta {
+    background: #141720;
+    border: 1px solid rgba(197, 160, 89, 0.35);
+    border-radius: 12px;
+    padding: 22px 20px;
+    text-align: center;
+}
+.lw-login-cta-head {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #C5A059;
+    margin-bottom: 8px;
+    font-size: 0.98rem;
+}
+.lw-console-login-cta p {
+    font-size: 0.82rem;
+    color: #9CA3AF;
+    line-height: 1.45;
+    margin: 0 0 16px;
+}
+.lw-console-login-btn {
+    display: inline-block;
+    width: 100%;
+    padding: 13px 20px;
+    background: #C5A059;
+    color: #0F1115;
+    font-size: 0.88rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    border-radius: 8px;
+    text-decoration: none;
+    box-shadow: 0 6px 20px rgba(197, 160, 89, 0.25);
+    transition: all 0.2s;
+}
+.lw-console-login-btn:hover {
+    background: #D8B26E;
+    color: #0F1115;
+    transform: translateY(-2px);
+}
+
+.lw-console-status-card {
+    background: #141720;
+    border-radius: 12px;
+    padding: 22px 20px;
+    text-align: center;
+}
+.lw-console-status-card strong {
+    display: block;
+    margin: 10px 0 6px;
+    font-size: 1.05rem;
+}
+.lw-console-status-card p {
+    font-size: 0.82rem;
+    color: #9CA3AF;
+    margin: 0;
+    line-height: 1.45;
+}
+.lw-console-status-card.upcoming strong { color: #C5A059; }
+.lw-console-status-card.ended strong { color: #E5E7EB; }
+
+/* Bảng Lịch Sử Khớp Lệnh Trực Tiếp */
+.lw-console-history-box {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 22px;
+}
+.lw-history-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+.lw-history-head h3 {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #C5A059;
+    margin: 0;
+}
+.lw-history-badge {
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #9CA3AF;
+}
+.lw-history-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.lw-history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #141720;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.82rem;
+}
+.lw-history-item.is-leader {
+    background: rgba(197, 160, 89, 0.12);
+    border-color: rgba(197, 160, 89, 0.45);
+}
+.lw-history-rank {
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.1);
+    color: #9CA3AF;
+}
+.lw-history-rank.rank-1 {
+    background: #C5A059;
+    color: #0F1115;
+}
+.lw-history-rank.rank-2 {
+    background: #E5E7EB;
+    color: #111827;
+}
+.lw-history-rank.rank-3 {
+    background: #B45309;
+    color: #FFFFFF;
+}
+.lw-history-user {
+    flex: 1;
+    margin-left: 10px;
+}
+.lw-history-user strong {
+    display: block;
+    font-size: 0.82rem;
+    color: #E5E7EB;
+}
+.lw-history-user time {
+    font-size: 0.72rem;
+    color: #9CA3AF;
+}
+.lw-history-amount {
+    font-weight: 700;
+    color: #C5A059;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.86rem;
+}
+.lw-history-empty {
+    padding: 20px 10px;
+    text-align: center;
+    color: #9CA3AF;
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+.lw-history-footer {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 14px;
+    font-size: 0.72rem;
+    color: #9CA3AF;
+}
+
+/* 4. Bottom Related Auctions */
+.lw-single-related-auctions {
+    margin-top: 64px;
+    padding-top: 48px;
+    border-top: 1px solid #E5E2DC;
+}
+.lw-related-head {
+    text-align: center;
+    margin-bottom: 36px;
+}
+.lw-related-kicker {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #C5A059;
+    margin-bottom: 6px;
+}
+.lw-related-head h2 {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.9rem;
+    color: #0F1115;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .lw-single-auction-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+    .lw-auction-right-col {
+        position: static;
+    }
+}
+@media (max-width: 640px) {
+    .lw-auction-trust-strip {
+        grid-template-columns: 1fr;
+    }
+    .lw-gallery-main-image {
+        min-height: 300px;
+    }
+    .lw-gallery-main-image img {
+        max-height: 320px;
+    }
+    .lw-cp-main-price {
+        font-size: 1.85rem;
+    }
+    .lw-cp-meta-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+}
+
