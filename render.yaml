@@ -1,0 +1,114 @@
+# Render Blueprint – Luxury Watches (WordPress + WooCommerce + MySQL 8.4)
+# Hướng dẫn: docs/RENDER_DEPLOY.md
+#
+# Không chứa bí mật: mật khẩu và khóa do Render tự sinh (generateValue) hoặc bạn nhập
+# trên dashboard khi tạo Blueprint (sync: false).
+
+services:
+  # ---------------------------------------------------------------------------
+  # WordPress (Apache + PHP 8.3) – public, HTTPS qua *.onrender.com
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: luxury-watches-web
+    runtime: docker
+    plan: starter            # cần gói trả phí để gắn Persistent Disk
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz.php
+    autoDeploy: true
+    buildFilter:
+      ignoredPaths:
+        - docs/**
+        - lab-reports/**
+        - scripts/**
+        - docker/mysql/**
+        - "**/*.md"
+    disk:
+      name: wp-uploads
+      mountPath: /var/www/html/wp-content/uploads
+      sizeGB: 2         # tăng được sau, không giảm được
+    envVars:
+      # Kết nối MySQL qua private network của Render.
+      - key: WORDPRESS_DB_HOST
+        fromService:
+          name: luxury-watches-mysql
+          type: pserv
+          property: host
+      # Cổng MySQL cố định (property "port" của Render là cổng HTTP, không dùng cho MySQL).
+      - key: WORDPRESS_DB_PORT
+        value: "3306"
+      - key: WORDPRESS_DB_NAME
+        fromService:
+          name: luxury-watches-mysql
+          type: pserv
+          envVarKey: MYSQL_DATABASE
+      - key: WORDPRESS_DB_USER
+        fromService:
+          name: luxury-watches-mysql
+          type: pserv
+          envVarKey: MYSQL_USER
+      - key: WORDPRESS_DB_PASSWORD
+        fromService:
+          name: luxury-watches-mysql
+          type: pserv
+          envVarKey: MYSQL_PASSWORD
+
+      # WP_HOME / WP_SITEURL: để trống thì dùng RENDER_EXTERNAL_URL (https://<tên>.onrender.com).
+      # Khi gắn domain riêng, thêm hai biến này trên dashboard.
+      - key: WP_ENVIRONMENT_TYPE
+        value: production
+      - key: WP_DEBUG
+        value: "false"
+
+      # Khóa bảo mật WordPress: sinh một lần khi tạo Blueprint, giữ nguyên giữa các lần deploy.
+      - key: WORDPRESS_AUTH_KEY
+        generateValue: true
+      - key: WORDPRESS_SECURE_AUTH_KEY
+        generateValue: true
+      - key: WORDPRESS_LOGGED_IN_KEY
+        generateValue: true
+      - key: WORDPRESS_NONCE_KEY
+        generateValue: true
+      - key: WORDPRESS_AUTH_SALT
+        generateValue: true
+      - key: WORDPRESS_SECURE_AUTH_SALT
+        generateValue: true
+      - key: WORDPRESS_LOGGED_IN_SALT
+        generateValue: true
+      - key: WORDPRESS_NONCE_SALT
+        generateValue: true
+
+      # Nhập trên dashboard khi tạo Blueprint (không lưu trong repository).
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+
+  # ---------------------------------------------------------------------------
+  # MySQL 8.4 – private service, chỉ truy cập được trong private network
+  # ---------------------------------------------------------------------------
+  - type: pserv
+    name: luxury-watches-mysql
+    runtime: docker
+    plan: starter
+    region: singapore
+    dockerfilePath: ./docker/mysql/Dockerfile
+    dockerContext: ./docker/mysql
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - docker/mysql/**
+    disk:
+      name: mysql-data
+      mountPath: /var/lib/mysql
+      sizeGB: 2         # tăng được sau, không giảm được
+    envVars:
+      - key: MYSQL_DATABASE
+        value: luxury_watches
+      - key: MYSQL_USER
+        value: wordpress
+      - key: MYSQL_PASSWORD
+        generateValue: true
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true

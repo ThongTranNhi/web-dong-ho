@@ -4,7 +4,9 @@
 #  - WordPress core, WooCommerce, Storefront, SePay Gateway: tải bản cố định, kiểm tra SHA-256.
 #  - Theme con và plugin tùy chỉnh: lấy từ repository.
 #  - Không chứa database, .env, wp-config thật hay bất kỳ bí mật nào.
-#  - Chạy bằng user www-data, Apache lắng nghe cổng $PORT (mặc định 8080).
+#  - Entrypoint chạy root chỉ để trao quyền volume/disk uploads cho www-data (Render, Railway
+#    gắn disk với quyền root); mọi request PHP do tiến trình Apache www-data xử lý.
+#    Apache lắng nghe cổng $PORT (mặc định 8080; Render cấp 10000).
 #
 # Nâng phiên bản: đổi ARG tương ứng và cập nhật SHA-256 (sha256sum của file tải về).
 
@@ -118,11 +120,10 @@ RUN chmod 755 /usr/local/bin/wp /usr/local/bin/lw-entrypoint \
 
 ENV PORT=8080
 WORKDIR /var/www/html
-USER www-data
 EXPOSE 8080
 
-# Volume uploads được gắn ở đây (compose / Railway). Không khai báo VOLUME để Railway
-# và compose tự quản lý.
+# Volume/disk uploads được gắn ở /var/www/html/wp-content/uploads (compose, Render, Railway).
+# Không khai báo VOLUME để nền tảng tự quản lý.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
     CMD curl -fsS -o /dev/null "http://127.0.0.1:${PORT}/healthz.php" || exit 1
 

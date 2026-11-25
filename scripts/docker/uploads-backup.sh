@@ -7,7 +7,7 @@ out="${1:-backups/uploads-$(timestamp).tar.gz}"
 mkdir -p "$(dirname "$out")"
 
 echo "Đang sao lưu uploads → $out"
-"${COMPOSE[@]}" run --rm --no-deps -T --entrypoint tar wordpress \
+"${COMPOSE[@]}" run --rm --no-deps -T --user www-data --entrypoint tar wordpress \
     -czf - -C /var/www/html/wp-content uploads > "$out"
 
 [ -s "$out" ] || die "file sao lưu rỗng"

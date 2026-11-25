@@ -9,7 +9,7 @@ src="${1:-}"
 [ -n "$src" ] || die "dùng: scripts/docker/uploads-restore.sh <file.tar.gz | thư-mục-uploads>"
 
 restore() {
-    "${COMPOSE[@]}" run --rm --no-deps -T --entrypoint tar wordpress \
+    "${COMPOSE[@]}" run --rm --no-deps -T --user www-data --entrypoint tar wordpress \
         -xzf - -C /var/www/html/wp-content --no-same-owner --no-same-permissions
 }
 

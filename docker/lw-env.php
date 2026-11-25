@@ -55,6 +55,11 @@ if (!function_exists('lw_env')) {
             $railway_port = lw_env('MYSQLPORT', isset($url['port']) ? (string) $url['port'] : '');
             $host = $railway_host !== '' ? $railway_host . ($railway_port !== '' ? ':' . $railway_port : '') : 'db';
         }
+        // Cổng riêng (Render: WORDPRESS_DB_PORT) khi host chưa kèm cổng.
+        $port = lw_env('WORDPRESS_DB_PORT');
+        if ($port !== '' && ctype_digit($port) && !preg_match('/:\d+$/', $host)) {
+            $host .= ':' . $port;
+        }
 
         $config = [
             'host'     => $host,

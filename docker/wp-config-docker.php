@@ -50,7 +50,9 @@ if (lw_is_forwarded_https()) {
     $_SERVER['SERVER_PORT'] = 443;
 }
 
-$lw_home = rtrim(lw_env('WP_HOME'), '/');
+// WP_HOME đặt tay; nếu không có, dùng URL công khai do nền tảng cấp (Render: RENDER_EXTERNAL_URL,
+// dạng https://<tên>.onrender.com). Khi có một trong hai, header Host không bao giờ được dùng.
+$lw_home = rtrim(lw_env_first(['WP_HOME', 'RENDER_EXTERNAL_URL']), '/');
 if ($lw_home === '' && isset($_SERVER['HTTP_HOST']) && preg_match('/^[A-Za-z0-9.\-]+(:\d+)?$/', (string) $_SERVER['HTTP_HOST'])) {
     // Chỉ dùng khi chưa đặt WP_HOME (vd. lần deploy đầu). Production nên đặt WP_HOME cố định.
     $lw_scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
@@ -75,7 +77,7 @@ if (!in_array($lw_env_type, ['local', 'development', 'staging', 'production'], t
 }
 define('WP_ENVIRONMENT_TYPE', $lw_env_type);
 
-$lw_debug = lw_env_bool('WORDPRESS_DEBUG', false);
+$lw_debug = lw_env_bool('WORDPRESS_DEBUG', lw_env_bool('WP_DEBUG', false));
 define('WP_DEBUG', $lw_debug);
 // Không bao giờ hiển thị lỗi ra trình duyệt ở production.
 define('WP_DEBUG_DISPLAY', $lw_debug && $lw_env_type !== 'production' && lw_env_bool('WORDPRESS_DEBUG_DISPLAY', false));

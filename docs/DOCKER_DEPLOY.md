@@ -1,5 +1,7 @@
 # Chạy và deploy Luxury Watches bằng Docker
 
+> Triển khai production: **Render** là phương án đang được chọn – xem [RENDER_DEPLOY.md](RENDER_DEPLOY.md). Phần Railway (mục 9) chỉ để tham khảo.
+
 Tài liệu cho người chạy dự án trên máy local bằng Docker và người deploy lên Railway
 (hoặc nền tảng hỗ trợ Docker khác).
 
@@ -51,7 +53,8 @@ Tài liệu cho người chạy dự án trên máy local bằng Docker và ngư
 | `luxury-watches-child`, `luxury-auctions`, `luxury-chatbox`, `ai-content-guard` | repository | theo commit |
 
 - PHP extension: mysqli, pdo_mysql, gd (jpeg/png/webp/avif), intl, zip, exif, mbstring, opcache, bcmath.
-- Chạy bằng user `www-data`, mã nguồn chỉ đọc; chỉ `uploads` ghi được. Cập nhật plugin/theme/core
+- Entrypoint chạy root chỉ để trao quyền thư mục uploads cho `www-data`; mọi request PHP do Apache
+  `www-data` xử lý. Mã nguồn chỉ đọc; chỉ `uploads` ghi được. Cập nhật plugin/theme/core
   bằng cách đổi phiên bản trong `Dockerfile` rồi build lại, **không** cập nhật qua trang quản trị
   (đã tắt bằng `DISALLOW_FILE_MODS`).
 - `wp-config.php` của image (`docker/wp-config-docker.php`) đọc mọi cấu hình từ biến môi trường.
@@ -121,7 +124,7 @@ core, WooCommerce, Storefront, SePay vẫn lấy từ image. Không dùng file n
 | Build lại sau khi sửa code / Dockerfile | `docker compose up --build -d` |
 | Build lại từ đầu, không cache | `docker compose build --no-cache && docker compose up -d` |
 | Xem log | `docker compose logs -f wordpress` (hoặc `db`) |
-| Chạy WP-CLI | `docker compose exec wordpress wp plugin list` |
+| Chạy WP-CLI | `docker compose exec -u www-data wordpress wp plugin list` |
 | Vào shell container | `docker compose exec wordpress bash` |
 
 > ⚠️ `docker compose down -v` **xóa volume** (database và uploads). Chỉ dùng khi chắc chắn.
@@ -200,7 +203,7 @@ Docker: MySQL trong container, không mở cổng). Chỉ cần tránh trùng c�
 3. `scripts/docker/db-import.sh D:/backup/luxury_watches.sql`
 4. Ảnh tải lên ngoài thư mục `2026` (nếu có): `scripts/docker/uploads-restore.sh wordpress/wp-content/uploads`
 5. Đổi URL cũ nếu khác `http://localhost:8000` (mục 6). Có thể kiểm tra URL cũ:
-   `docker compose exec wordpress wp option get home`.
+   `docker compose exec -u www-data wordpress wp option get home`.
 6. Đăng nhập `/wp-admin` bằng tài khoản cũ.
 
 Database từ MariaDB 10.4 (XAMPP) import được vào MySQL 8.4. Dump có lỗi cú pháp riêng của
@@ -231,7 +234,7 @@ WP_ENVIRONMENT_TYPE=production
 WORDPRESS_AUTH_KEY=…   (và 7 khóa còn lại – chuỗi ngẫu nhiên, KHÔNG dùng lại khóa local)
 LUXURY_CHATBOX_GEMINI_KEY=…
 GOOGLE_CLIENT_ID=…            (nếu dùng đăng nhập Google)
-RAILWAY_RUN_UID=0             (bắt buộc khi gắn volume – xem 9.3)
+RAILWAY_RUN_UID=0             (chỉ cần nếu Railway chạy container bằng user khác root – xem 9.3)
 ```
 
 Không đặt `PORT`: Railway tự cấp và Apache lắng nghe đúng cổng đó. Nếu thiếu `WORDPRESS_DB_*`,
@@ -246,7 +249,7 @@ Filesystem của container Railway **mất khi redeploy**. Bắt buộc gắn vo
 
 - Service WordPress → **Settings → Volumes → New Volume**, mount path
   `/var/www/html/wp-content/uploads`.
-- Đặt biến `RAILWAY_RUN_UID=0`: volume Railway thuộc root; entrypoint (chạy root) sẽ trao quyền
+- Image mặc định chạy entrypoint bằng root: volume Railway thuộc root; entrypoint sẽ trao quyền
   thư mục cho `www-data`, chép media có sẵn, rồi Apache xử lý request bằng `www-data`.
 
 Giới hạn: một volume chỉ gắn được vào **một** instance (không scale ngang), dung lượng theo gói
@@ -333,7 +336,7 @@ không ghi nó vào log, tài liệu hay ticket.
 | `GOOGLE_CLIENT_ID` | – | Đăng nhập Google; trống thì ẩn nút |
 | `LW_API_ALLOWED_ORIGINS` | – | CORS cho API `luxury/v1`, phân tách bằng dấu phẩy |
 | `PORT` | `8080` | Cổng Apache trong container; Railway tự đặt |
-| `RAILWAY_RUN_UID` | – | Đặt `0` trên Railway khi dùng volume |
+| `RAILWAY_RUN_UID` | – | Railway: chỉ cần khi service bị đặt chạy bằng user khác root |
 | `DB_INIT_DIR` | `./docker/db-init` | Thư mục SQL import lúc khởi tạo (chỉ Compose) |
 | `COMPOSE_ARGS` | – | Tham số thêm cho `docker compose` trong `scripts/docker/*.sh`, vd. `--env-file .env.staging` |
 
@@ -349,7 +352,7 @@ Mọi biến cũng đọc được từ file qua hậu tố `_FILE` (Docker secr
 | Vào site bị chuyển về `localhost` hoặc domain cũ | `WP_HOME`/`WP_SITEURL` sai, hoặc nội dung còn URL cũ → search-replace (mục 6). |
 | Vòng lặp chuyển hướng trên HTTPS | Proxy không gửi `X-Forwarded-Proto`. Đặt `WORDPRESS_FORCE_SSL_ADMIN=false`, kiểm tra cấu hình proxy. |
 | Trang 404 cho mọi đường dẫn trừ trang chủ | Vào **Cài đặt → Đường dẫn tĩnh** bấm Lưu (rewrite đã có sẵn trong Apache). |
-| Upload ảnh báo "không thể ghi" | Volume uploads không thuộc `www-data`. Railway: đặt `RAILWAY_RUN_UID=0`. Local: `docker compose run --rm --user root --entrypoint chown wordpress -R www-data:www-data /var/www/html/wp-content/uploads`. |
+| Upload ảnh báo "không thể ghi" | Volume uploads không thuộc `www-data` (entrypoint tự sửa khi khởi động; xem log). Sửa tay: `docker compose run --rm --user root --entrypoint chown wordpress -R www-data:www-data /var/www/html/wp-content/uploads`. |
 | Ảnh lớn bị từ chối | Giới hạn 64 MB (`docker/php/luxury.ini`). |
 | Không cài được plugin trong admin | Cố ý (`DISALLOW_FILE_MODS`). Thêm plugin vào `Dockerfile` rồi build lại. |
 | Chatbot trả lời "chưa cấu hình" | Thiếu `LUXURY_CHATBOX_GEMINI_KEY`/`GEMINI_API_KEY` trong môi trường. |

@@ -12,6 +12,10 @@ Website bán hàng và đấu giá đồng hồ xây dựng trên WordPress, Woo
 
 WordPress core, plugin bên thứ ba, cấu hình cơ sở dữ liệu, log và backup không được lưu trong Git.
 
+## Triển khai production
+
+Phương án đang được chọn: **Render** (Web Service Docker + MySQL Private Service + Persistent Disk), khai báo trong [`render.yaml`](render.yaml). Hướng dẫn deploy, import database, domain, SePay webhook, backup và rollback: [docs/RENDER_DEPLOY.md](docs/RENDER_DEPLOY.md). Tài liệu Railway ([docs/RAILWAY_DEPLOY.md](docs/RAILWAY_DEPLOY.md)) chỉ còn để tham khảo.
+
 ## Chạy bằng Docker (khuyến nghị)
 
 ```bash

@@ -14,11 +14,11 @@ args=(search-replace "$old" "$new" --all-tables-with-prefix --precise --skip-col
 
 if [ "$mode" != "--apply" ]; then
     echo "Chạy thử (không thay đổi dữ liệu). Thêm --apply để thay thật."
-    "${COMPOSE[@]}" exec -T wordpress wp "${args[@]}" --dry-run
+    "${COMPOSE[@]}" exec -T --user www-data wordpress wp "${args[@]}" --dry-run
     exit 0
 fi
 
 "$(dirname "$0")/db-export.sh" "backups/db-before-search-replace-$(timestamp).sql.gz"
-"${COMPOSE[@]}" exec -T wordpress wp "${args[@]}"
-"${COMPOSE[@]}" exec -T wordpress wp cache flush >/dev/null 2>&1 || true
+"${COMPOSE[@]}" exec -T --user www-data wordpress wp "${args[@]}"
+"${COMPOSE[@]}" exec -T --user www-data wordpress wp cache flush >/dev/null 2>&1 || true
 echo "Đã thay '$old' → '$new'."

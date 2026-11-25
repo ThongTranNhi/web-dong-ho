@@ -15,10 +15,12 @@ marker="${uploads}/.lw-seed-version"
 log() { echo "[entrypoint] $*" >&2; }
 
 if [ "$(id -u)" = "0" ]; then
-    # Chạy bằng root (vd. Railway volume với RAILWAY_RUN_UID=0): sửa quyền volume,
-    # Apache vẫn hạ quyền tiến trình xử lý request xuống www-data.
+    # Mặc định chạy root: disk của Render/Railway được gắn với quyền root, nên trao quyền
+    # thư mục uploads cho www-data. Apache hạ quyền tiến trình xử lý request xuống www-data.
     mkdir -p "$uploads"
     chown www-data:www-data "$uploads"
+    # File tạo bởi lần chạy cũ bằng user khác (vd. restore bằng root) cũng thuộc www-data.
+    find "$uploads" -xdev ! -user www-data -exec chown www-data:www-data {} + 2>/dev/null || true
     as_www() { setpriv --reuid=www-data --regid=www-data --init-groups "$@"; }
 else
     if [ "$PORT" -lt 1024 ]; then
@@ -36,7 +38,7 @@ if as_www test -w "$uploads"; then
     fi
 else
     log "CẢNH BÁO: ${uploads} không ghi được bởi www-data – không upload được ảnh."
-    log "Railway: đặt biến RAILWAY_RUN_UID=0 cho service khi dùng volume."
+    log "Container đang chạy không root; chạy bằng root để entrypoint trao quyền thư mục."
 fi
 
 exec "$@"

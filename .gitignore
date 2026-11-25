@@ -17,6 +17,7 @@
 !/compose.dev.yaml
 !/.gitattributes
 !/railway.toml
+!/render.yaml
 !/docker/
 !/docker/**
 
