@@ -58,23 +58,25 @@
 @keyframes lwc-open { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
 
 .lwc-head {
-  display: flex; align-items: center; gap: .75rem;
-  padding: .85rem .75rem .85rem 1rem;
+  display: flex; align-items: center; gap: .5rem;
+  padding: .75rem .65rem;
   background: var(--lwc-navy); color: #fff;
   border-bottom: 2px solid var(--lwc-gold);
 }
-.lwc-head .lwc-dial { flex-basis: 32px; width: 32px; height: 32px; }
+.lwc-head .lwc-dial { flex: 0 0 30px; width: 30px; height: 30px; }
 .lwc-head__text { flex: 1; min-width: 0; }
-.lwc-title { margin: 0; color: #fff; font-size: 1rem; font-weight: 600; line-height: 1.3; }
-.lwc-subtitle { margin: 0; color: #b9c4cc; font-size: .78rem; line-height: 1.35; }
+.lwc-title { margin: 0; color: #fff; font-size: .96rem; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lwc-subtitle { margin: 0; color: #b9c4cc; font-size: .75rem; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lwc-icon-btn {
-  display: inline-grid; place-items: center; width: 40px; height: 40px; padding: 0;
+  display: inline-grid; place-items: center; width: 36px; height: 36px; padding: 0; flex-shrink: 0;
   border: 0; border-radius: 8px; background: transparent; color: #dfe6eb; cursor: pointer;
 }
 .lwc-icon-btn:hover { background: rgba(255, 255, 255, .1); color: #fff; }
 .lwc-icon-btn:focus-visible { outline: 2px solid var(--lwc-gold); outline-offset: 1px; }
 .lwc-icon-btn svg { width: 20px; height: 20px; }
 .lwc-icon-btn:disabled { opacity: .4; cursor: default; background: transparent; }
+.lwc-back-btn { color: #f0e6d2; }
+.lwc-back-btn:hover { background: rgba(217, 194, 143, .16); color: var(--lwc-gold); }
 
 .lwc-notice { margin: 0; padding: .6rem 1rem; font-size: .84rem; border-bottom: 1px solid var(--lwc-line); background: #fff8e8; color: #5b4313; }
 .lwc-notice--off { background: #eef2f5; color: var(--lwc-ink); }

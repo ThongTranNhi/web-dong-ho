@@ -11,16 +11,22 @@ final class LC_Knowledge {
     const MAX_PRODUCTS = 6;
     const MAX_ALTERNATIVES = 3;
     const MAX_AUCTIONS = 6;
-    const MAX_POLICIES = 2;
+    const MAX_POLICIES = 3;
     const POLICY_CHARS = 3500;
     const AUCTION_PRODUCT_CATEGORY = 'bo-suu-tap-dau-gia';
 
     /** slug => trigger regex (matched against lower-cased text). */
     private static function policy_triggers() {
         return [
-            'chinh-sach-bao-hanh' => '/bảo hành|bao hanh|sửa chữa|hỏng|bảo dưỡng/u',
-            'chinh-sach-doi-tra' => '/đổi trả|doi tra|trả hàng|hoàn tiền|hoàn trả|đổi hàng|đổi sản phẩm/u',
-            'chinh-sach-van-chuyen' => '/vận chuyển|van chuyen|giao hàng|giao hang|ship|phí giao|nhận hàng|bao lâu.*(nhận|giao)/u',
+            'lien-he' => '/liên hệ|lien he|showroom|cửa hàng ở đâu|địa chỉ|dia chi|ở đâu|o dau|hotline|số điện thoại|sđt|sdt|chi nhánh|tổng đài|giờ mở cửa|thời gian làm việc|email|hỗ trợ/u',
+            'gioi-thieu' => '/giới thiệu|gioi thieu|về chúng tôi|ve chung toi|cửa hàng là ai|shop là ai|website này|trang web này|watch store|watchstore|luxury atelier|lịch sử|nguồn gốc|uy tín|cam kết|atelier/u',
+            'chinh-sach-bao-hanh' => '/bảo hành|bao hanh|sửa chữa|hỏng|bảo dưỡng|thay pin|lau dầu/u',
+            'chinh-sach-doi-tra' => '/đổi trả|doi tra|trả hàng|hoàn tiền|hoàn trả|đổi hàng|đổi sản phẩm|1 đổi 1/u',
+            'chinh-sach-van-chuyen' => '/vận chuyển|van chuyen|giao hàng|giao hang|ship|phí giao|nhận hàng|bao lâu.*(nhận|giao)|hỏa tốc/u',
+            'tieu-chuan-giao-nhan-hang' => '/tiêu chuẩn|giao nhận|đóng gói|đồng kiểm|kiểm tra khi nhận|tem niêm phong|hộp|mở hộp/u',
+            'cau-hoi-thuong-gap' => '/câu hỏi|thắc mắc|faq|hỏi đáp|thông tin thêm/u',
+            'thuong-hieu-dong-ho' => '/thương hiệu|hãng nào|rolex|omega|patek|hublot|tissot|casio|hãng đồng hồ/u',
+            'dieu-khoan-va-dieu-kien' => '/điều khoản|dieu khoan|quy định|quy che|điều kiện/u',
             'chinh-sach-bao-mat' => '/bảo mật|bao mat|dữ liệu cá nhân|thông tin cá nhân|quyền riêng tư/u',
             'huong-dan-mua-hang' => '/đặt hàng|dat hang|thanh toán|thanh toan|cách mua|mua như thế nào|giỏ hàng|trả góp|hóa đơn/u',
             'huong-dan-dau-gia' => '/(cách|hướng dẫn|làm sao|làm thế nào|quy trình|quy tắc|điều kiện).*(đấu giá|trả giá)|(đấu giá|trả giá).*(như thế nào|ra sao|thế nào)/u',
@@ -131,8 +137,8 @@ final class LC_Knowledge {
         $intents['auctions'] = (bool) preg_match('/đấu giá|dau gia|trả giá|tra gia|phiên|lot\s*\d|bước giá|buoc gia|giá khởi điểm|đặt giá/u', $t);
         $intents['products'] = (bool) preg_match('/đồng hồ|dong ho|mẫu|gợi ý|goi y|tư vấn|tu van|còn hàng|tồn kho|giá|triệu|ngân sách|mm|tặng|quà|nam|nữ|chronograph|moonphase|lặn|thể thao|thanh lịch|dây|mặt số|sản phẩm|bộ sưu tập/u', $t);
         if (!$intents['products'] && !$intents['auctions'] && !$intents['policies']) {
+            $intents['policies'][] = 'gioi-thieu';
             $intents['policies'][] = 'cau-hoi-thuong-gap';
-            $intents['products'] = true;
         }
         // Policy or auction questions only pull products when there is a real shopping signal.
         if (($intents['auctions'] || $intents['policies']) && $intents['products']) {
@@ -161,6 +167,31 @@ final class LC_Knowledge {
             'now' => wp_date('H:i d/m/Y'),
             'timezone' => wp_timezone_string(),
             'currency' => function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : 'VND',
+            'store_overview' => [
+                'name' => 'WatchStore - Luxury Watches Atelier',
+                'tagline' => 'Đỉnh cao chế tác Thụy Sĩ & Di sản độc bản',
+                'website' => home_url('/'),
+                'hotline' => '0988 123 456 (Tư vấn 24/7)',
+                'email' => 'concierge@watchstore.luxury',
+                'working_hours' => '08:30 - 21:30 (Mở cửa tất cả các ngày trong tuần, kể cả ngày Lễ)',
+                'showrooms' => [
+                    'Hà Nội 1: 97 Trần Hưng Đạo, P. Cửa Nam, Hoàn Kiếm, Hà Nội (Flagship Atelier)',
+                    'Hà Nội 2: 58 Tràng Tiền, P. Tràng Tiền, Hoàn Kiếm, Hà Nội',
+                    'TP. Hồ Chí Minh 1: 125 Đồng Khởi, P. Bến Nghé, Quận 1, TP. HCM',
+                    'TP. Hồ Chí Minh 2: 72 Lê Thánh Tôn, P. Bến Nghé, Quận 1, TP. HCM',
+                    'Đà Nẵng: 36 Bạch Đằng, P. Thạch Thang, Hải Châu, Đà Nẵng',
+                ],
+                'core_commitments' => [
+                    '100% Chính hãng: Đền gấp 20 lần nếu phát hiện hàng giả, hàng nhái.',
+                    'Bảo hành 5 năm: Toàn diện bộ máy theo tiêu chuẩn Thụy Sĩ.',
+                    'Thay pin trọn đời: Áp dụng miễn phí vĩnh viễn cho đồng hồ Quartz.',
+                    'Lau dầu bảo dưỡng định kỳ miễn phí trọn đời cho đồng hồ cơ khí.',
+                    '1 Đổi 1 trong 7 ngày nếu có lỗi kỹ thuật từ nhà sản xuất.',
+                    'Giao hàng hỏa tốc toàn quốc, miễn phí 100%, bảo hiểm toàn diện, cho phép mở hộp kiểm tra trước khi thanh toán.',
+                    'Sàn đấu giá độc bản: Đấu giá trực tuyến các cỗ máy độc bản minh bạch và công khai.',
+                ],
+                'url' => home_url('/lien-he/'),
+            ],
             'criteria' => null,
             'products' => [],
             'alternative_products' => [],
@@ -168,7 +199,10 @@ final class LC_Knowledge {
             'policies' => [],
             'unavailable' => [],
         ];
-        $sources = [];
+        $sources = [
+            home_url('/lien-he/') => 'Hệ thống Showroom & Dịch vụ Khách hàng VIP',
+            home_url('/gioi-thieu/') => 'Về WatchStore Luxury Atelier',
+        ];
 
         if ($intents['products']) {
             // The current question wins; earlier turns only fill criteria it leaves open.

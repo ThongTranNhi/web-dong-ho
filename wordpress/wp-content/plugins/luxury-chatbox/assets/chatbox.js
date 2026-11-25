@@ -96,6 +96,7 @@
       ['rect', { x: '16.5', y: '0.5', width: '3', height: '2.5', rx: '.8', fill: 'currentColor' }]
     ], '0 0 36 36', cls || 'lwc-dial');
   }
+  var ICON_BACK = [['path', { d: 'M19 12H5M12 19l-7-7 7-7', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }]];
   var ICON_CLOSE = [['path', { d: 'M6 6l12 12M18 6L6 18', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round' }]];
   var ICON_TRASH = [['path', { d: 'M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.8', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }]];
   var ICON_SEND = [['path', { d: 'M4 12l16-8-6 16-2.5-6.5L4 12z', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.8', 'stroke-linejoin': 'round' }]];
@@ -130,9 +131,11 @@
   var launcher = el('button', { type: 'button', className: 'lwc-launcher', 'aria-expanded': 'false', 'aria-controls': 'lwc-panel', 'aria-haspopup': 'dialog' },
     [dial(), el('span', { text: 'Tư vấn đồng hồ' }), unreadDot]);
 
+  var backBtn = el('button', { type: 'button', className: 'lwc-icon-btn lwc-back-btn', 'aria-label': 'Quay lại phần trước' }, [svg(ICON_BACK)]);
   var closeBtn = el('button', { type: 'button', className: 'lwc-icon-btn', 'aria-label': 'Đóng cửa sổ chat' }, [svg(ICON_CLOSE)]);
   var clearBtn = el('button', { type: 'button', className: 'lwc-icon-btn', 'aria-label': 'Xóa hội thoại', disabled: true }, [svg(ICON_TRASH)]);
   var head = el('div', { className: 'lwc-head' }, [
+    backBtn,
     dial(),
     el('div', { className: 'lwc-head__text' }, [
       el('h2', { className: 'lwc-title', id: 'lwc-title', text: 'Trợ lý LW Atelier' }),
@@ -587,6 +590,19 @@
     positionLauncher();
   }
   launcher.addEventListener('click', function () { openPanel(true); });
+  backBtn.addEventListener('click', function () {
+    if (state.hasMessages) {
+      log.textContent = '';
+      log.appendChild(welcome());
+      setHasMessages(false);
+      input.value = '';
+      autosize();
+      updateComposer();
+      announce('Đã quay lại màn hình gợi ý');
+    } else {
+      closePanel();
+    }
+  });
   closeBtn.addEventListener('click', closePanel);
   panel.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
