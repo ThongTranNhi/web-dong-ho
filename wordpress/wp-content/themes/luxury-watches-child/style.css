@@ -941,35 +941,28 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .woocommerce-checkout #order_review table,
 .woocommerce-checkout #order_review th,
-.woocommerce-checkout #order_review td {
-  border-color: rgba(255,255,255,.13);
-  color: inherit;
+.woocommerce-checkout #order_review td,
+.woocommerce-checkout #order_review thead,
+.woocommerce-checkout #order_review tbody,
+.woocommerce-checkout #order_review tfoot,
+.woocommerce-checkout #order_review tr {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-color: rgba(255,255,255,.13) !important;
+  color: inherit !important;
 }
-.woocommerce-checkout #order_review .order-total th,
-.woocommerce-checkout #order_review .order-total td,
-.woocommerce-checkout #order_review .order-total .amount {
-  color: #f1cf8d;
-  font-size: 1.1rem;
+.woocommerce-checkout #order_review table th {
+  color: #C5A059 !important;
+}
+.woocommerce-checkout #order_review table td.product-name {
+  color: #FFFFFF !important;
+}
+.woocommerce-checkout .woocommerce-billing-fields > h3 {
+  display: none !important;
 }
 .woocommerce-checkout h3 {
   color: inherit;
   font-size: clamp(1.45rem, 3vw, 2rem);
-}
-.woocommerce-checkout .woocommerce-billing-fields > h3::before {
-  content: "01";
-  margin-right: .7rem;
-  color: var(--lw-gold-deep);
-  font-family: var(--lw-font-body);
-  font-size: .75rem;
-  letter-spacing: .08em;
-}
-.woocommerce-checkout .woocommerce-additional-fields > h3::before {
-  content: "02";
-  margin-right: .7rem;
-  color: var(--lw-gold-deep);
-  font-family: var(--lw-font-body);
-  font-size: .75rem;
-  letter-spacing: .08em;
 }
 .woocommerce-checkout .form-row {
   margin-bottom: 1rem;

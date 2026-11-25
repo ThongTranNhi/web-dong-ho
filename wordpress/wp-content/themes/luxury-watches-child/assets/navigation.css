@@ -11,11 +11,14 @@
  .main-navigation .primary-navigation>ul.menu>li:focus-within,
  .main-navigation .primary-navigation>ul.menu>li.lw-watch-menu:hover,
  .main-navigation .primary-navigation>ul.menu>li.lw-watch-menu:focus-within{z-index:99999 !important}
- .main-navigation .primary-navigation>ul.menu>li>a{position:relative;display:block;padding:.55rem .7rem;border-radius:999px;color:#f5f0e7;font-size:.84rem;font-weight:600;white-space:nowrap;transition:color .2s}
- .main-navigation .primary-navigation>ul.menu>li>a:hover,.main-navigation .primary-navigation>ul.menu>li>a:focus-visible{color:#f5d79f}
+ .main-navigation .primary-navigation>ul.menu>li>a{position:relative;display:block;padding:.48rem .85rem;border-radius:999px;border:1px solid transparent;color:#f5f0e7 !important;font-size:.84rem;font-weight:600;white-space:nowrap;transition:all .2s ease}
+ .main-navigation .primary-navigation>ul.menu>li>a:hover,
+ .main-navigation .primary-navigation>ul.menu>li>a:focus-visible{color:#f5d79f !important;background:rgba(255,255,255,.08);border-color:rgba(213,180,119,.25)}
+ .main-navigation .primary-navigation>ul.menu>li.current-menu-item>a,
+ .main-navigation .primary-navigation>ul.menu>li.current_page_item>a,
+ .main-navigation .primary-navigation>ul.menu>li.current-menu-ancestor>a{color:#C5A059 !important;font-weight:700 !important;background:rgba(197,160,89,.18) !important;border:1px solid rgba(197,160,89,.38) !important;box-shadow:0 0 10px rgba(197,160,89,.15) !important}
  .main-navigation .primary-navigation>ul.menu>li.lw-watch-menu>a::after{content:"";display:inline-block;width:6px;height:6px;margin-left:8px;vertical-align:3px;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:rotate(45deg)}
- .lw-nav-indicator{position:absolute;z-index:1;left:0;top:0;display:block;border:1px solid rgba(222,185,121,.32);border-radius:999px;background:rgba(191,145,74,.18);opacity:0;pointer-events:none;transition:transform .42s cubic-bezier(.2,.9,.2,1),opacity .18s}
- .lw-nav-indicator.is-visible{opacity:1}.lw-nav-indicator.no-transition{transition:none}
+ .lw-nav-indicator{display:none !important}
  .main-navigation ul.menu>li.lw-watch-menu>.sub-menu{
    left:0;
    min-width:14rem;

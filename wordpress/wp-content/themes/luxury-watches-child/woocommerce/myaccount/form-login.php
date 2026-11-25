@@ -23,7 +23,7 @@ do_action( 'woocommerce_before_customer_login_form' );
 		<div class="lw-account-benefits">
 			<div class="lw-account-benefit-item">
 				<span class="lw-benefit-icon">
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5m-4.5-2.5 2 2"/><path d="m16 8-8 8"/><path d="m3 21 3-3"/><path d="m9.5 6.5 2 2-3.5 3.5-2-2 3.5-3.5z"/><path d="m14.5 1.5 5 5-2 2-5-5 2-2z"/></svg>
+					<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13-7.5 7.5c-.8.8-2 .8-2.8 0s-.8-2 0-2.8L11 10.2"/><path d="m16 16 6-6"/><path d="m8 8 6-6"/><path d="m9 7 8 8"/><path d="m21 11-8-8"/></svg>
 				</span>
 				<div>
 					<strong>Đặc quyền tham gia Sàn đấu giá live</strong>
@@ -33,7 +33,7 @@ do_action( 'woocommerce_before_customer_login_form' );
 			
 			<div class="lw-account-benefit-item">
 				<span class="lw-benefit-icon">
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+					<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
 				</span>
 				<div>
 					<strong>Hồ sơ bảo dưỡng &amp; Bảo hành 5 năm</strong>
@@ -43,7 +43,7 @@ do_action( 'woocommerce_before_customer_login_form' );
 			
 			<div class="lw-account-benefit-item">
 				<span class="lw-benefit-icon">
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+					<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
 				</span>
 				<div>
 					<strong>Ưu tiên bàn giao hỏa tốc 2 giờ</strong>
@@ -53,7 +53,7 @@ do_action( 'woocommerce_before_customer_login_form' );
 			
 			<div class="lw-account-benefit-item">
 				<span class="lw-benefit-icon">
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+					<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>
 				</span>
 				<div>
 					<strong>Chuyên viên Concierge phục vụ riêng</strong>

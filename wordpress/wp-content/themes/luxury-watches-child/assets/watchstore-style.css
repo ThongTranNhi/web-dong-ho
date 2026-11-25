@@ -2878,6 +2878,62 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
 
+.woocommerce-checkout .woocommerce-billing-fields > h3,
+.woocommerce-checkout .woocommerce-shipping-fields > h3 {
+  display: none !important;
+}
+
+.woocommerce-checkout #order_review table.shop_table,
+.woocommerce-checkout #order_review table.shop_table thead,
+.woocommerce-checkout #order_review table.shop_table tbody,
+.woocommerce-checkout #order_review table.shop_table tfoot,
+.woocommerce-checkout #order_review table.shop_table tr,
+.woocommerce-checkout #order_review table.shop_table th,
+.woocommerce-checkout #order_review table.shop_table td {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #E2E8F0 !important;
+}
+
+.woocommerce-checkout #order_review table.shop_table th {
+  color: #C5A059 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border-bottom: 1px solid rgba(197, 160, 89, 0.3) !important;
+}
+
+.woocommerce-checkout #order_review table.shop_table .product-name {
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+}
+
+.woocommerce-checkout #order_review table.shop_table .product-total,
+.woocommerce-checkout #order_review table.shop_table .order-total .amount,
+.woocommerce-checkout #order_review table.shop_table .cart-subtotal .amount {
+  color: #C5A059 !important;
+  font-weight: 800 !important;
+}
+
+.woocommerce-checkout #order_review #payment {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 10px !important;
+  margin-top: 20px !important;
+}
+
+.woocommerce-checkout #order_review #payment ul.payment_methods {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.woocommerce-checkout #order_review #payment div.payment_box {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #CBD5E1 !important;
+  border-radius: 6px !important;
+}
+
 @media (max-width: 920px) {
   .woocommerce-checkout .lw-checkout-columns {
     grid-template-columns: 1fr !important;
@@ -3045,15 +3101,32 @@
 }
 
 .lw-benefit-icon {
-  width: 34px !important;
-  height: 34px !important;
-  border-radius: 8px !important;
-  background: rgba(197, 160, 89, 0.15) !important;
-  border: 1px solid rgba(197, 160, 89, 0.3) !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, rgba(197, 160, 89, 0.28) 0%, rgba(197, 160, 89, 0.1) 100%) !important;
+  border: 1px solid rgba(197, 160, 89, 0.5) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   flex-shrink: 0 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  transition: all 0.25s ease !important;
+}
+
+.lw-benefit-icon svg {
+  display: block !important;
+  width: 22px !important;
+  height: 22px !important;
+  stroke: #E5C378 !important;
+  filter: drop-shadow(0 1px 3px rgba(197, 160, 89, 0.4)) !important;
+}
+
+.lw-account-benefit-item:hover .lw-benefit-icon {
+  background: linear-gradient(135deg, rgba(197, 160, 89, 0.45) 0%, rgba(197, 160, 89, 0.2) 100%) !important;
+  border-color: #E5C378 !important;
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 8px 20px rgba(197, 160, 89, 0.3) !important;
 }
 
 .lw-account-benefit-item strong {
