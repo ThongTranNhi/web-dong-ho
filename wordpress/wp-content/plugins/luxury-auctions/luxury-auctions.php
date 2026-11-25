@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Luxury Watches Auctions
  * Description: Phiên đấu giá đồng hồ với lịch mở/đóng, bước giá, lịch sử và kiểm soát trả giá đồng thời.
- * Version: 2.2.0
+ * Version: 2.7.0
  * Author: Luxury Watches
  * Text Domain: luxury-auctions
  */
@@ -10,7 +10,7 @@
 if (!defined('ABSPATH')) exit;
 
 final class Luxury_Watches_Auctions {
-    const VERSION = '2.2.0';
+    const VERSION = '2.7.0';
 
     public static function init() {
         add_action('init', [__CLASS__, 'register_post_type']);
@@ -419,29 +419,65 @@ final class Luxury_Watches_Auctions {
         $end = self::timestamp(get_post_meta($auction_id, '_lw_end_at', true));
         $lot = get_post_meta($auction_id, '_lw_lot_number', true);
         $gender = get_post_meta($auction_id, '_lw_gender', true);
+        $condition = get_post_meta($auction_id, '_lw_condition', true);
         $countdown_target = $state === 'upcoming' ? $start : $end;
+        $title = get_the_title($auction_id);
         ob_start(); ?>
-        <article class="lw-auction-card" data-auction-state="<?php echo esc_attr($state); ?>">
+        <article class="lw-auction-card" 
+          data-auction-state="<?php echo esc_attr($state); ?>"
+          data-auction-title="<?php echo esc_attr(mb_strtolower($title, 'UTF-8')); ?>"
+          data-auction-lot="<?php echo esc_attr(mb_strtolower($lot, 'UTF-8')); ?>"
+          data-auction-price="<?php echo esc_attr($current); ?>"
+          data-auction-bids="<?php echo esc_attr($summary['count']); ?>"
+          data-auction-end="<?php echo esc_attr($countdown_target ?: 0); ?>">
           <a class="lw-auction-card__image" href="<?php echo esc_url(get_permalink($auction_id)); ?>">
-            <img src="<?php echo esc_url(self::image_url($auction_id)); ?>" alt="<?php echo esc_attr(get_the_title($auction_id)); ?>" loading="lazy" decoding="async">
+            <img src="<?php echo esc_url(self::image_url($auction_id)); ?>" alt="<?php echo esc_attr($title); ?>" loading="lazy" decoding="async">
             <span class="lw-auction-status lw-auction-status--<?php echo esc_attr($state); ?>"><i aria-hidden="true"></i><?php echo esc_html(self::status_label($state)); ?></span>
-            <?php if ($lot) : ?><small><?php echo esc_html($lot); ?></small><?php endif; ?>
+            <small class="lw-lot-badge"><?php echo esc_html($lot ? $lot : 'LOT ' . sprintf('%03d', $auction_id)); ?></small>
           </a>
           <div class="lw-auction-card__body">
-            <?php if ($gender) : ?><p class="lw-auction-category"><?php echo esc_html($gender); ?></p><?php endif; ?>
-            <h3><a href="<?php echo esc_url(get_permalink($auction_id)); ?>"><?php echo esc_html(get_the_title($auction_id)); ?></a></h3>
-            <div class="lw-auction-card__prices">
-              <div><span>Giá hiện tại</span><strong><?php echo wp_kses_post(self::money($current)); ?></strong></div>
-              <?php if ($retail) : ?><div><span>Giá niêm yết</span><del><?php echo wp_kses_post(self::money($retail)); ?></del></div><?php endif; ?>
+            <div class="lw-auction-meta-row">
+              <span class="lw-auction-category"><?php echo esc_html($gender ?: 'Haute Horlogerie'); ?></span>
+              <span class="lw-auction-certified">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Kiểm định 100%
+              </span>
             </div>
-            <div class="lw-auction-card__facts"><span><?php echo esc_html(number_format_i18n($summary['count'])); ?> lượt trả</span><span>Bước <?php echo wp_kses_post(self::money($increment)); ?></span></div>
-            <?php if ($countdown_target) : ?>
-              <div class="lw-countdown" data-end="<?php echo esc_attr(wp_date(DATE_ATOM, $countdown_target)); ?>" data-state="<?php echo esc_attr($state); ?>">
-                <span><?php echo $state === 'upcoming' ? 'Mở sau' : ($state === 'ended' ? 'Đã kết thúc' : 'Còn lại'); ?></span>
-                <strong data-countdown-output><?php echo esc_html(wp_date('H:i · d/m/Y', $countdown_target)); ?></strong>
+            <h3 class="lw-auction-title"><a href="<?php echo esc_url(get_permalink($auction_id)); ?>"><?php echo esc_html($title); ?></a></h3>
+            <div class="lw-auction-specs">
+              <span><?php echo esc_html($condition ?: 'Đã kiểm định chuyên gia • Fullbox'); ?></span>
+            </div>
+            <div class="lw-auction-card__footer">
+              <div class="lw-auction-card__prices">
+                <div class="lw-price-col">
+                  <span class="lw-price-label">Giá hiện tại</span>
+                  <strong class="lw-current-price"><?php echo wp_kses_post(self::money($current)); ?></strong>
+                </div>
+                <div class="lw-price-col lw-price-col--retail">
+                  <span class="lw-price-label"><?php echo $retail ? 'Giá ước tính' : 'Giá khởi điểm'; ?></span>
+                  <span class="lw-retail-price"><?php echo wp_kses_post(self::money($retail ?: $start_price)); ?></span>
+                </div>
               </div>
-            <?php endif; ?>
-            <a class="lw-auction-link" href="<?php echo esc_url(get_permalink($auction_id)); ?>"><?php echo $state === 'live' ? 'Tham gia trả giá' : 'Xem thông tin phiên'; ?><span aria-hidden="true">→</span></a>
+              <div class="lw-auction-card__facts">
+                <span><i class="lw-dot-sep"></i><?php echo esc_html(number_format_i18n($summary['count'])); ?> lượt trả</span>
+                <span>Bước <?php echo wp_kses_post(self::money($increment)); ?></span>
+              </div>
+              <?php if ($countdown_target) : ?>
+                <div class="lw-countdown" data-end="<?php echo esc_attr(wp_date(DATE_ATOM, $countdown_target)); ?>" data-state="<?php echo esc_attr($state); ?>">
+                  <div class="lw-countdown-icon">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  </div>
+                  <div class="lw-countdown-content">
+                    <span class="lw-countdown-label"><?php echo $state === 'upcoming' ? 'Mở sau' : ($state === 'ended' ? 'Đã kết thúc' : 'Thời gian còn lại'); ?></span>
+                    <strong data-countdown-output><?php echo esc_html(wp_date('H:i · d/m/Y', $countdown_target)); ?></strong>
+                  </div>
+                </div>
+              <?php endif; ?>
+              <a class="lw-auction-link" href="<?php echo esc_url(get_permalink($auction_id)); ?>">
+                <span><?php echo $state === 'live' ? 'THAM GIA TRẢ GIÁ' : ($state === 'upcoming' ? 'XEM TRƯỚC PHIÊN' : 'CHI TIẾT PHIÊN'); ?></span>
+                <span class="lw-cta-arrow" aria-hidden="true">→</span>
+              </a>
+            </div>
           </div>
         </article>
         <?php return ob_get_clean();
@@ -451,39 +487,168 @@ final class Luxury_Watches_Auctions {
         $query = new WP_Query([
             'post_type' => 'watch_auction',
             'post_status' => 'publish',
-            'posts_per_page' => 24,
+            'posts_per_page' => 48,
             'meta_key' => '_lw_end_at',
             'orderby' => ['meta_value' => 'ASC', 'date' => 'DESC'],
         ]);
+
+        $overview = function_exists('lw_auction_overview') ? lw_auction_overview() : ['live' => [], 'upcoming' => [], 'ended' => []];
+        $total_count = count($overview['live']) + count($overview['upcoming']) + count($overview['ended']);
+        if ($total_count === 0 && $query->found_posts > 0) {
+            $total_count = $query->found_posts;
+        }
+        $live_count = count($overview['live']);
+        $upcoming_count = count($overview['upcoming']);
+        $ended_count = count($overview['ended']);
+
         ob_start(); ?>
-        <section class="lw-auction-market" aria-labelledby="lw-auction-market-title">
-          <header class="lw-auction-market__header">
-            <div><h2 id="lw-auction-market-title">Sàn đấu giá tuyển chọn</h2><p>Theo dõi giá, thời gian và lịch sử lượt trả trong một giao diện minh bạch.</p></div>
-            <div class="lw-auction-live-mark"><i aria-hidden="true"></i>Cập nhật theo thời gian phiên</div>
-          </header>
-          <div class="lw-auction-filters" role="group" aria-label="Lọc phiên đấu giá">
-            <button type="button" class="is-active" data-auction-filter="all" aria-pressed="true">Tất cả</button>
-            <button type="button" data-auction-filter="live" aria-pressed="false">Đang diễn ra</button>
-            <button type="button" data-auction-filter="upcoming" aria-pressed="false">Sắp mở</button>
-            <button type="button" data-auction-filter="ended" aria-pressed="false">Đã kết thúc</button>
-          </div>
-          <?php if ($query->have_posts()) : ?>
-            <div class="lw-auction-grid">
-              <?php while ($query->have_posts()) { $query->the_post(); echo self::auction_card(get_the_ID()); } wp_reset_postdata(); ?>
+        <div class="lw-auction-wrapper">
+          <section class="lw-auction-market" aria-labelledby="lw-auction-market-title">
+            <header class="lw-auction-market__header">
+              <div class="lw-header-content">
+                <span class="lw-header-kicker">HAUTE HORLOGERIE AUCTIONS</span>
+                <h1 id="lw-auction-market-title">Sàn Đấu Giá Tuyển Chọn</h1>
+                <p>Những cỗ máy thời gian độc bản được tuyển chọn với giá, bước giá và thời hạn công khai. Mỗi lượt trả giá được kiểm soát và ghi nhận bảo mật theo thời gian thực.</p>
+              </div>
+              <div class="lw-auction-live-mark"><i aria-hidden="true"></i>Khớp lệnh thời gian thực</div>
+            </header>
+
+            <!-- A. ENTERPRISE FILTER & TOOLBAR -->
+            <div class="lw-auction-toolbar">
+              <div class="lw-auction-filters" role="group" aria-label="Lọc phiên đấu giá">
+                <button type="button" class="is-active" data-auction-filter="all" aria-pressed="true">
+                  Tất cả <span class="lw-tab-count"><?php echo esc_html($total_count); ?></span>
+                </button>
+                <button type="button" data-auction-filter="live" aria-pressed="false">
+                  Đang diễn ra <span class="lw-tab-count"><?php echo esc_html($live_count); ?></span>
+                </button>
+                <button type="button" data-auction-filter="upcoming" aria-pressed="false">
+                  Sắp mở <span class="lw-tab-count"><?php echo esc_html($upcoming_count); ?></span>
+                </button>
+                <button type="button" data-auction-filter="ended" aria-pressed="false">
+                  Đã kết thúc <span class="lw-tab-count"><?php echo esc_html($ended_count); ?></span>
+                </button>
+              </div>
+
+              <div class="lw-auction-tools">
+                <div class="lw-auction-search-wrap">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" id="lwAuctionSearch" class="lw-auction-search" placeholder="Tìm theo tên hoặc LOT..." aria-label="Tìm kiếm">
+                </div>
+                <div class="lw-auction-sort-wrap">
+                  <select id="lwAuctionSort" class="lw-auction-sort" aria-label="Sắp xếp phiên">
+                    <option value="default">Sắp xếp: Mặc định</option>
+                    <option value="end-soon">Sắp kết thúc</option>
+                    <option value="price-asc">Giá thấp đến cao</option>
+                    <option value="price-desc">Giá cao đến thấp</option>
+                    <option value="bids-desc">Sôi động nhất (Lượt trả)</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div class="lw-auction-filter-empty" hidden>Không có phiên nào trong trạng thái này.</div>
-          <?php else : ?>
-            <div class="lw-auction-empty"><h3>Chưa có phiên đấu giá</h3><p>Các phiên mới sẽ được công bố tại đây.</p></div>
-          <?php endif; ?>
-          <div class="lw-auction-workflow" aria-label="Quy trình tham gia đấu giá">
-            <h2>Tham gia trong ba bước rõ ràng</h2>
-            <ol>
-              <li><span>1</span><div><strong>Đăng nhập thành viên</strong><p>Tài khoản xác định người trả giá và bảo vệ lịch sử phiên.</p></div></li>
-              <li><span>2</span><div><strong>Chọn mức giá hợp lệ</strong><p>Hệ thống kiểm tra giá tối thiểu, bước giá và trạng thái phiên trên máy chủ.</p></div></li>
-              <li><span>3</span><div><strong>Theo dõi kết quả</strong><p>Giá cao nhất và lịch sử được cập nhật sau mỗi lượt trả thành công.</p></div></li>
-            </ol>
-          </div>
-        </section>
+
+            <!-- B. AUCTION GRID -->
+            <?php if ($query->have_posts()) : ?>
+              <div class="lw-auction-grid" id="lwAuctionGrid">
+                <?php while ($query->have_posts()) { $query->the_post(); echo self::auction_card(get_the_ID()); } wp_reset_postdata(); ?>
+              </div>
+              <div class="lw-auction-filter-empty" hidden>Không tìm thấy phiên đấu giá phù hợp với bộ lọc hoặc từ khóa.</div>
+            <?php else : ?>
+              <div class="lw-auction-empty"><h3>Chưa có phiên đấu giá</h3><p>Các phiên mới sẽ được công bố tại đây.</p></div>
+            <?php endif; ?>
+
+            <!-- C. ENTERPRISE TRUST & METRICS BAR -->
+            <div class="lw-auction-trust-bar">
+              <div class="lw-trust-item">
+                <div class="lw-trust-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                </div>
+                <div class="lw-trust-text">
+                  <strong>100% Kiểm định chuyên gia</strong>
+                  <span>Chứng nhận nguồn gốc minh bạch &amp; chứng thư độc quyền</span>
+                </div>
+              </div>
+              <div class="lw-trust-item">
+                <div class="lw-trust-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <div class="lw-trust-text">
+                  <strong>Bảo chứng giao dịch</strong>
+                  <span>Thanh toán ký quỹ an toàn chuẩn ngân hàng</span>
+                </div>
+              </div>
+              <div class="lw-trust-item">
+                <div class="lw-trust-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+                <div class="lw-trust-text">
+                  <strong>Cập nhật thời gian thực</strong>
+                  <span>Hệ thống khớp lệnh tức thì &amp; chống nghẽn mạng</span>
+                </div>
+              </div>
+              <div class="lw-trust-item">
+                <div class="lw-trust-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div class="lw-trust-text">
+                  <strong>Bảo mật danh tính</strong>
+                  <span>Riêng tư tuyệt đối cho nhà sưu tầm cao cấp</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- D. 3-STEP PROCESS (FULL-WIDTH) -->
+            <div class="lw-auction-workflow">
+              <div class="lw-wf-inner">
+                <div class="lw-wf-left">
+                  <span class="lw-wf-kicker">QUY TRÌNH MINH BẠCH</span>
+                  <h2 class="lw-wf-heading">Ba bước<br>tham gia<br>đấu giá</h2>
+                  <p class="lw-wf-desc">Minh bạch, nhanh chóng và an toàn — mỗi lượt trả giá được bảo chứng và xác thực tự động trên hệ thống máy chủ độc lập.</p>
+                  <a href="<?php echo esc_url( wc_get_page_permalink('myaccount') ); ?>" class="lw-wf-cta">
+                    ĐĂNG KÝ NGAY
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </a>
+                </div>
+                <div class="lw-wf-right">
+                  <div class="lw-wf-item" data-n="01">
+                    <div class="lw-wf-item__top">
+                      <span class="lw-wf-num">01</span>
+                      <div class="lw-wf-rule"></div>
+                    </div>
+                    <div class="lw-wf-item__body">
+                      <svg class="lw-wf-ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                      <strong>Đăng nhập thành viên</strong>
+                      <p>Tài khoản xác định người trả giá hợp lệ và bảo vệ toàn bộ lịch sử phiên của quý khách.</p>
+                    </div>
+                  </div>
+                  <div class="lw-wf-item" data-n="02">
+                    <div class="lw-wf-item__top">
+                      <span class="lw-wf-num">02</span>
+                      <div class="lw-wf-rule"></div>
+                    </div>
+                    <div class="lw-wf-item__body">
+                      <svg class="lw-wf-ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                      <strong>Chọn mức giá hợp lệ</strong>
+                      <p>Hệ thống tự động kiểm tra bước giá tối thiểu và trạng thái phiên theo thời gian thực.</p>
+                    </div>
+                  </div>
+                  <div class="lw-wf-item" data-n="03">
+                    <div class="lw-wf-item__top">
+                      <span class="lw-wf-num">03</span>
+                      <div class="lw-wf-rule"></div>
+                    </div>
+                    <div class="lw-wf-item__body">
+                      <svg class="lw-wf-ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                      <strong>Theo dõi kết quả</strong>
+                      <p>Mức giá cao nhất và lịch sử lượt trả được cập nhật tức thì sau mỗi lượt thành công.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </section>
+        </div>
         <?php return ob_get_clean();
     }
 
@@ -613,7 +778,8 @@ final class Luxury_Watches_Auctions {
     }
 
     public static function assets() {
-        wp_enqueue_style('luxury-auctions', plugin_dir_url(__FILE__) . 'assets/auctions.css', [], self::VERSION);
+        wp_enqueue_style('lw-auction-fonts', 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap', [], null);
+        wp_enqueue_style('luxury-auctions', plugin_dir_url(__FILE__) . 'assets/auctions.css', ['lw-auction-fonts'], self::VERSION);
         wp_enqueue_script('luxury-auctions', plugin_dir_url(__FILE__) . 'assets/auctions.js', [], self::VERSION, true);
     }
 }

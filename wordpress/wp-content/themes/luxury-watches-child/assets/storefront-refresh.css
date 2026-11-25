@@ -52,15 +52,14 @@ h1, h2, h3, h4, h5, h6, .lw-display { font-family: var(--lw-font-body); font-wei
 
 .site-header { background: #15232e; box-shadow: none; margin-bottom: 0; }
 body.home.lw-home .site-header { margin-bottom: 0; }
-.lw-home .site-header > .col-full { margin-inline: auto; }
-.lw-home .storefront-primary-navigation > .col-full { width: min(1180px, calc(100% - 48px)); margin-inline: auto; }
-.site-header > .col-full { padding-block: 1.15rem; gap: 1.5rem; }
-.site-header .site-branding .site-title { font-size: clamp(1.3rem, 2.2vw, 1.9rem); font-weight: 600; letter-spacing: -.055em; }
-.site-header .site-branding .site-description { display: none; }
-.site-header .site-search .search-field { background: #20323f; border-color: #53616b; border-radius: 5px; min-height: 44px; }
-.site-header .site-search .search-field:focus { background: #263c4b; }
-.storefront-primary-navigation { background: #15232e; border-top: 1px solid #33424e; box-shadow: none; }
+.site-header > .col-full { max-width: 1260px; width: calc(100% - 40px); margin-inline: auto; padding-block: 1.15rem; gap: 1.5rem; }
+.storefront-primary-navigation > .col-full { max-width: 1260px; width: calc(100% - 40px); margin-inline: auto; }
+.storefront-primary-navigation { background: #15232e; border-top: 1px solid #33424e; box-shadow: none; position: relative; z-index: 999; }
 .main-navigation .primary-navigation > ul.menu { min-height: 54px; }
+.main-navigation .primary-navigation > ul.menu > li:hover,
+.main-navigation .primary-navigation > ul.menu > li:focus-within,
+.main-navigation .primary-navigation > ul.menu > li.lw-watch-menu:hover,
+.main-navigation .primary-navigation > ul.menu > li.lw-watch-menu:focus-within { z-index: 99999 !important; }
 .main-navigation .primary-navigation > ul.menu > li > a { border-radius: 4px; }
 .lw-header-auction { display: inline-flex; align-items: center; gap: .55rem; padding: .55rem .8rem; flex: 0 0 auto; color: #f1d3a0; border: 1px solid #7b725e; border-radius: 5px; text-decoration: none; font-size: .78rem; font-weight: 500; }
 .lw-header-auction:hover { color: #fff; border-color: #f1d3a0; }
@@ -113,7 +112,7 @@ body.home.lw-home .site-header { margin-bottom: 0; }
 .lw-auction-card__prices strong { color: #183c52; font-size: 1.1rem; }
 .lw-auction-card__prices .woocommerce-Price-amount, .lw-auction-card__prices .woocommerce-Price-currencySymbol { display: inline; white-space: nowrap; }
 .lw-auction-link { color: #1a3c53; font-size: .85rem; font-weight: 600; }
-.lw-countdown { background: #eef3f6; border-radius: 4px; }
+.lw-countdown { background: #111827; border-radius: 8px; color: #fff; }
 .lw-discovery-steps { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; padding-top: 1.4rem; border-top: 1px solid var(--lw-line); color: #596773; font-size: .78rem; }
 .lw-discovery-steps span { display: inline-flex; align-items: center; gap: .6rem; }
 .lw-discovery-steps b { display: grid; place-items: center; width: 25px; height: 25px; background: #eaf0f4; border-radius: 50%; color: #24465c; font-weight: 500; }
