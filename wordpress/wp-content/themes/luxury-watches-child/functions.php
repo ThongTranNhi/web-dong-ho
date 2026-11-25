@@ -315,50 +315,76 @@ add_action('storefront_homepage_after_on_sale_products_title', function() {
 add_action('woocommerce_before_cart', 'lw_render_cart_header_enhancements', 5);
 function lw_render_cart_header_enhancements() {
     ?>
-    <div class="lw-cart-header-wrapper">
-        <!-- Breadcrumb / Checkout Steps -->
-        <nav class="lw-checkout-steps" aria-label="Tiến trình thanh toán">
-            <div class="lw-step is-active">
-                <span class="lw-step-num">1</span>
-                <span class="lw-step-label">Giỏ hàng của bạn</span>
+    <div class="lw-checkout-hero-card lw-cart-hero-card">
+        <div class="lw-hero-top-row">
+            <div class="lw-hero-title-group">
+                <div class="lw-hero-kicker">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#C5A059"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span>HAUTE HORLOGERIE ATELIER · GIỎ HÀNG QUÝ KHÁCH</span>
+                </div>
+                <h1 class="lw-hero-title">Giỏ Hàng Của Bạn</h1>
+                <p class="lw-hero-subtitle">Mỗi cỗ máy thời gian đều được bảo chứng xuất xứ độc bản &amp; niêm phong bảo hiểm 100% trong suốt lộ trình chuyển phát.</p>
             </div>
-            <div class="lw-step-divider"></div>
-            <div class="lw-step">
-                <span class="lw-step-num">2</span>
-                <span class="lw-step-label">Thông tin & Thanh toán</span>
+            <div class="lw-hero-badge">
+                <span class="lw-badge-val">100% CHÍNH HÃNG</span>
+                <span class="lw-badge-sub">Đền gấp 20 lần nếu hàng giả</span>
             </div>
-            <div class="lw-step-divider"></div>
-            <div class="lw-step">
-                <span class="lw-step-num">3</span>
-                <span class="lw-step-label">Hoàn tất đơn hàng</span>
-            </div>
-        </nav>
+        </div>
 
-        <!-- Luxury Assurance Banner -->
-        <div class="lw-cart-assurance-banner">
+        <!-- Integrated Stepper -->
+        <div class="lw-hero-stepper-wrap">
+            <nav class="lw-checkout-steps lw-steps--dark" aria-label="Tiến trình đơn hàng">
+                <div class="lw-step is-active">
+                    <span class="lw-step-num">01</span>
+                    <span class="lw-step-text">
+                        <span class="lw-step-label">Giỏ hàng của bạn</span>
+                        <span class="lw-step-desc">Xem lại sản phẩm</span>
+                    </span>
+                </div>
+                <div class="lw-step-divider"></div>
+                <div class="lw-step">
+                    <span class="lw-step-num">02</span>
+                    <span class="lw-step-text">
+                        <span class="lw-step-label">Thông tin &amp; Thanh toán</span>
+                        <span class="lw-step-desc">Bảo mật SSL 256-bit</span>
+                    </span>
+                </div>
+                <div class="lw-step-divider"></div>
+                <div class="lw-step">
+                    <span class="lw-step-num">03</span>
+                    <span class="lw-step-text">
+                        <span class="lw-step-label">Hoàn tất đơn hàng</span>
+                        <span class="lw-step-desc">Xác nhận &amp; Bàn giao VIP</span>
+                    </span>
+                </div>
+            </nav>
+        </div>
+
+        <!-- 4 Assurance Pillars embedded in Hero Card -->
+        <div class="lw-cart-assurance-banner lw-assurance--hero">
             <div class="lw-cart-assurance-item">
-                <span class="lw-assurance-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span>
+                <span class="lw-assurance-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span>
                 <div>
                     <strong>Bảo hiểm vận chuyển 100%</strong>
                     <span>Bảo vệ trọn vẹn giá trị đồng hồ trên toàn hành trình</span>
                 </div>
             </div>
             <div class="lw-cart-assurance-item">
-                <span class="lw-assurance-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><path d="m11 8 0 6"/><path d="m8 11 6 0"/></svg></span>
+                <span class="lw-assurance-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><path d="m11 8 0 6"/><path d="m8 11 6 0"/></svg></span>
                 <div>
                     <strong>Quyền đồng kiểm tận tay</strong>
-                    <span>Kiểm tra thân vỏ & thẻ bảo hành trước khi thanh toán</span>
+                    <span>Kiểm tra thân vỏ &amp; thẻ bảo hành trước khi nhận</span>
                 </div>
             </div>
             <div class="lw-cart-assurance-item">
-                <span class="lw-assurance-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+                <span class="lw-assurance-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
                 <div>
                     <strong>Giao hỏa tốc chuyên biệt</strong>
-                    <span>Giao trong 2 giờ tại nội thành TP.HCM & Hà Nội</span>
+                    <span>Giao trong 2 giờ tại nội thành TP.HCM &amp; Hà Nội</span>
                 </div>
             </div>
             <div class="lw-cart-assurance-item">
-                <span class="lw-assurance-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg></span>
+                <span class="lw-assurance-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg></span>
                 <div>
                     <strong>Bảo hành quốc tế 5 năm</strong>
                     <span>Hỗ trợ kỹ thuật và bảo dưỡng định kỳ Atelier</span>
@@ -484,23 +510,82 @@ function lw_render_add_to_cart_toast_notification() {
 add_action('woocommerce_before_checkout_form', 'lw_render_checkout_header_enhancements', 5);
 function lw_render_checkout_header_enhancements() {
     ?>
-    <div class="lw-cart-header-wrapper" style="margin-bottom: 28px;">
-        <nav class="lw-checkout-steps" aria-label="Tiến trình thanh toán">
-            <div class="lw-step is-complete">
-                <span class="lw-step-num">&#10003;</span>
-                <span class="lw-step-label">Giỏ hàng của bạn</span>
+    <div class="lw-checkout-hero-card">
+        <div class="lw-hero-top-row">
+            <div class="lw-hero-title-group">
+                <div class="lw-hero-kicker">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <span>HAUTE HORLOGERIE CHECKOUT · CỔNG THANH TOÁN BẢO MẬT</span>
+                </div>
+                <h1 class="lw-hero-title">Thanh Toán &amp; Xác Nhận Đơn Hàng</h1>
+                <p class="lw-hero-subtitle">Giao dịch mã hóa chuẩn 256-bit SSL · Giám định chính hãng 100% tận tay · Hỗ trợ Chuyên viên Concierge 24/7.</p>
             </div>
-            <div class="lw-step-divider"></div>
-            <div class="lw-step is-active">
-                <span class="lw-step-num">2</span>
-                <span class="lw-step-label">Thông tin &amp; Thanh toán</span>
+            <div class="lw-hero-badge">
+                <span class="lw-badge-val">BẢO MẬT 256-BIT</span>
+                <span class="lw-badge-sub">Mã hóa an toàn tuyệt đối</span>
             </div>
-            <div class="lw-step-divider"></div>
-            <div class="lw-step">
-                <span class="lw-step-num">3</span>
-                <span class="lw-step-label">Hoàn tất đơn hàng</span>
+        </div>
+
+        <!-- Integrated Stepper -->
+        <div class="lw-hero-stepper-wrap">
+            <nav class="lw-checkout-steps lw-steps--dark" aria-label="Tiến trình đơn hàng">
+                <div class="lw-step is-complete">
+                    <span class="lw-step-num">&#10003;</span>
+                    <span class="lw-step-text">
+                        <span class="lw-step-label">Giỏ hàng</span>
+                        <span class="lw-step-desc">Đã chọn cỗ máy</span>
+                    </span>
+                </div>
+                <div class="lw-step-divider is-active"></div>
+                <div class="lw-step is-active">
+                    <span class="lw-step-num">02</span>
+                    <span class="lw-step-text">
+                        <span class="lw-step-label">Thông tin &amp; Thanh toán</span>
+                        <span class="lw-step-desc">Đang tiến hành</span>
+                    </span>
+                </div>
+                <div class="lw-step-divider"></div>
+                <div class="lw-step">
+                    <span class="lw-step-num">03</span>
+                    <span class="lw-step-text">
+                        <span class="lw-step-label">Hoàn tất đơn hàng</span>
+                        <span class="lw-step-desc">Xác nhận &amp; Bàn giao VIP</span>
+                    </span>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Checkout Reassurance Strip -->
+        <div class="lw-cart-assurance-banner lw-assurance--hero">
+            <div class="lw-cart-assurance-item">
+                <span class="lw-assurance-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span>
+                <div>
+                    <strong>Bảo mật thanh toán 100%</strong>
+                    <span>Mã hóa SSL 256-bit chuẩn quốc tế</span>
+                </div>
             </div>
-        </nav>
+            <div class="lw-cart-assurance-item">
+                <span class="lw-assurance-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><path d="m11 8 0 6"/><path d="m8 11 6 0"/></svg></span>
+                <div>
+                    <strong>Quyền đồng kiểm tận tay</strong>
+                    <span>Kiểm tra máy &amp; kích hoạt bảo hành</span>
+                </div>
+            </div>
+            <div class="lw-cart-assurance-item">
+                <span class="lw-assurance-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+                <div>
+                    <strong>Giao hỏa tốc chuyên biệt</strong>
+                    <span>Giao kín đáo, đúng hẹn trong 2 giờ</span>
+                </div>
+            </div>
+            <div class="lw-cart-assurance-item">
+                <span class="lw-assurance-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+                <div>
+                    <strong>Hotline Concierge 24/7</strong>
+                    <span>0988 123 456 · Hỗ trợ tư vấn VIP</span>
+                </div>
+            </div>
+        </div>
     </div>
     <?php
 }
