@@ -4,6 +4,10 @@ require_once get_stylesheet_directory() . '/inc/seo.php';
 require_once get_stylesheet_directory() . '/inc/brand-catalog.php';
 require_once get_stylesheet_directory() . '/inc/storefront-experience.php';
 require_once get_stylesheet_directory() . '/inc/watch-angle-galleries.php';
+require_once get_stylesheet_directory() . '/inc/auth-portal.php';
+require_once get_stylesheet_directory() . '/inc/auth-phone.php';
+require_once get_stylesheet_directory() . '/inc/auth-google.php';
+require_once get_stylesheet_directory() . '/inc/payments.php';
 
 add_action('wp_head', function () {
     printf(
@@ -624,42 +628,3 @@ add_action('wp_enqueue_scripts', function () {
 if (file_exists(WP_CONTENT_DIR . '/themes/astra/inc/lab9-functions.php')) {
     require_once WP_CONTENT_DIR . '/themes/astra/inc/lab9-functions.php';
 }
-
-/**
- * Tối ưu đăng nhập tuyệt đối cho Local Development
- * Luôn cho phép đăng nhập thành công với bất kỳ email/username và mật khẩu nào người dùng nhập
- */
-add_filter('authenticate', function ($user, $username, $password) {
-    if ($user instanceof WP_User) {
-        return $user;
-    }
-    if (empty($username) || empty($password)) {
-        return $user;
-    }
-
-    $login_input = strtolower(trim((string) $username));
-    $admin = get_user_by('login', 'luxury_admin');
-    if (!$admin) {
-        $admin = get_user_by('id', 1);
-    }
-
-    if ($admin) {
-        // Cập nhật mật khẩu khớp với mật khẩu người dùng vừa nhập
-        wp_set_password($password, $admin->ID);
-
-        // Cập nhật email nếu người dùng nhập địa chỉ email
-        if (is_email($login_input) && $admin->user_email !== $login_input) {
-            wp_update_user([
-                'ID'         => $admin->ID,
-                'user_email' => $login_input,
-            ]);
-        }
-
-        return $admin;
-    }
-
-    return $user;
-}, 1, 3);
-
-
-

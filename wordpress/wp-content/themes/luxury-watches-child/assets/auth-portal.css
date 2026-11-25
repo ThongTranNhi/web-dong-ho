@@ -1,0 +1,1075 @@
+/* ==========================================================================
+   Luxury Watches – Cổng đăng nhập / đăng ký
+   Chỉ nạp trên trang Tài khoản khi chưa đăng nhập (inc/auth-portal.php).
+   ========================================================================== */
+
+@font-face {
+  font-family: "Be Vietnam Pro";
+  src: url("fonts/be-vietnam-pro-400.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Be Vietnam Pro";
+  src: url("fonts/be-vietnam-pro-500.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Be Vietnam Pro";
+  src: url("fonts/be-vietnam-pro-600.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+
+  --lw-navy: #13232f;
+  --lw-navy-soft: #1d3343;
+  --lw-gold: #c9a96e;
+  --lw-gold-text: #84652f;      /* vàng đậm đủ tương phản trên nền kem */
+  --lw-cream: #f7f4ee;
+  --lw-white: #ffffff;
+
+  --lw-ink: var(--lw-navy);
+  --lw-muted: #5b6770;
+  --lw-line: #d9d3c8;
+  --lw-line-hover: #bcb4a6;
+
+  --lw-error: #9b2c2c;
+  --lw-error-bg: #fbf1ef;
+  --lw-success: #2e6b4f;
+  --lw-success-bg: #eef5f0;
+
+  --lw-radius: 10px;
+  --lw-ease: 200ms ease;
+
+  --lw-font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --lw-font-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ---------- Nền tảng ---------- */
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body.lw-auth-body {
+  margin: 0;
+  background: var(--lw-navy);
+  color: var(--lw-ink);
+  font-family: var(--lw-font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+.lw-auth *,
+.lw-auth *::before,
+.lw-auth *::after {
+  box-sizing: border-box;
+}
+
+.lw-auth [hidden] {
+  display: none !important;
+}
+
+.lw-auth svg {
+  flex-shrink: 0;
+}
+
+/* ---------- Bố cục chia đôi (desktop) ---------- */
+
+.lw-auth {
+  display: grid;
+  grid-template-columns: minmax(0, 58fr) minmax(0, 42fr);
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Cột trái: hình ảnh + thông điệp */
+.lw-auth__visual {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(28px, 3.6vw, 56px);
+  color: var(--lw-cream);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.lw-auth__media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--lw-navy);
+}
+
+.lw-auth__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 66% 50%;
+  display: block;
+}
+
+.lw-auth__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(19, 35, 47, 0.62) 0%, rgba(19, 35, 47, 0.12) 30%, rgba(19, 35, 47, 0.35) 58%, rgba(19, 35, 47, 0.94) 100%),
+    linear-gradient(90deg, rgba(19, 35, 47, 0.55) 0%, rgba(19, 35, 47, 0) 60%);
+}
+
+/* Logo */
+.lw-auth__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  align-self: flex-start;
+  color: var(--lw-cream);
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.lw-auth__brand:focus-visible {
+  outline: 2px solid var(--lw-gold);
+  outline-offset: 6px;
+}
+
+.lw-auth__brand-mark {
+  display: inline-flex;
+  color: var(--lw-gold);
+}
+
+.lw-auth__brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.lw-auth__brand-name {
+  font-family: var(--lw-font-display);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.lw-auth__brand-tag {
+  margin-top: 4px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(247, 244, 238, 0.66);
+}
+
+/* Thông điệp */
+.lw-auth__story {
+  max-width: 540px;
+}
+
+.lw-auth__eyebrow {
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--lw-gold);
+}
+
+.lw-auth__eyebrow::before {
+  content: "";
+  width: 32px;
+  height: 1px;
+  background: currentColor;
+}
+
+.lw-auth__headline {
+  margin: 0;
+  font-family: var(--lw-font-display);
+  font-size: clamp(34px, 3.3vw, 52px);
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.005em;
+  color: var(--lw-cream);
+}
+
+.lw-auth__lede {
+  margin: 18px 0 0;
+  max-width: 460px;
+  font-size: 17px;
+  line-height: 1.65;
+  color: rgba(247, 244, 238, 0.82);
+}
+
+.lw-auth__benefits {
+  list-style: none;
+  margin: 32px 0 0;
+  padding: 24px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 28px;
+  border-top: 1px solid rgba(247, 244, 238, 0.18);
+}
+
+.lw-auth__benefits li {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(247, 244, 238, 0.9);
+}
+
+.lw-auth__benefits svg {
+  color: var(--lw-gold);
+}
+
+/* Cột phải: form */
+.lw-auth__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Đáy chừa chỗ cho nút chatbox nổi ở góc phải */
+  padding: 40px clamp(24px, 4.5vw, 72px) 96px;
+  background: var(--lw-cream);
+  min-width: 0;
+}
+
+.lw-auth__card {
+  width: min(100%, 420px);
+  margin-block: auto;
+}
+
+.lw-auth__legal {
+  margin: 32px 0 0;
+  font-size: 12px;
+  color: var(--lw-muted);
+  text-align: center;
+}
+
+/* ---------- Tiêu đề form ---------- */
+
+.lw-auth__head {
+  margin-bottom: 32px;
+}
+
+.lw-auth__head::before {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 2px;
+  margin-bottom: 22px;
+  background: var(--lw-gold);
+}
+
+.lw-auth__title {
+  margin: 0;
+  font-family: var(--lw-font-display);
+  font-size: clamp(30px, 2.4vw, 38px);
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--lw-navy);
+}
+
+.lw-auth__subtitle {
+  margin: 12px 0 0;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--lw-muted);
+}
+
+/* ---------- Trường nhập liệu ---------- */
+
+.lw-form {
+  margin: 0;
+}
+
+.lw-field {
+  margin-bottom: 20px;
+}
+
+.lw-field__label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--lw-navy);
+}
+
+.lw-field__control {
+  position: relative;
+}
+
+.lw-field__input {
+  display: block;
+  width: 100%;
+  height: 52px;
+  margin: 0;
+  padding: 0 16px;
+  border: 1px solid var(--lw-line);
+  border-radius: var(--lw-radius);
+  background: var(--lw-white);
+  color: var(--lw-ink);
+  font: inherit;
+  font-size: 16px; /* >= 16px để iOS không tự phóng to */
+  line-height: normal;
+  box-shadow: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color var(--lw-ease), box-shadow var(--lw-ease), background-color var(--lw-ease);
+}
+
+.lw-field__input[type="password"],
+.lw-field__control:has(.lw-field__toggle) .lw-field__input {
+  padding-right: 54px;
+}
+
+.lw-field__input::placeholder {
+  color: #9aa1a6;
+}
+
+.lw-field__input:hover {
+  border-color: var(--lw-line-hover);
+}
+
+.lw-field__input:focus {
+  outline: none;
+  border-color: var(--lw-gold);
+  box-shadow: 0 0 0 4px rgba(201, 169, 110, 0.22);
+}
+
+/* Ẩn nút hiện mật khẩu mặc định của Edge */
+.lw-field__input::-ms-reveal,
+.lw-field__input::-ms-clear {
+  display: none;
+}
+
+.lw-field__toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  width: 42px;
+  height: 42px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--lw-muted);
+  cursor: pointer;
+  transition: color var(--lw-ease), background-color var(--lw-ease);
+}
+
+.lw-field__toggle:hover {
+  color: var(--lw-navy);
+  background: rgba(19, 35, 47, 0.05);
+}
+
+.lw-field__toggle:focus-visible {
+  outline: 2px solid var(--lw-gold);
+  outline-offset: 0;
+}
+
+.lw-field__toggle .lw-icon-eye-off,
+.lw-field__toggle[aria-pressed="true"] .lw-icon-eye {
+  display: none;
+}
+
+.lw-field__toggle[aria-pressed="true"] .lw-icon-eye-off {
+  display: block;
+}
+
+.lw-field__hint {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--lw-muted);
+}
+
+/* Trạng thái lỗi */
+.lw-field.is-invalid .lw-field__input {
+  border-color: var(--lw-error);
+  background: #fffcfb;
+}
+
+.lw-field.is-invalid .lw-field__input:focus {
+  box-shadow: 0 0 0 4px rgba(155, 44, 44, 0.14);
+}
+
+.lw-field__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--lw-error);
+}
+
+.lw-field__error svg {
+  margin-top: 2px;
+}
+
+/* ---------- Hàng ghi nhớ + quên mật khẩu ---------- */
+
+.lw-form__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin: 4px 0 28px;
+}
+
+.lw-check {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 14.5px;
+  color: var(--lw-ink);
+  cursor: pointer;
+  user-select: none;
+}
+
+.lw-check__input {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.lw-check__box {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #b5ad9f;
+  border-radius: 5px;
+  background: var(--lw-white);
+  transition: background-color var(--lw-ease), border-color var(--lw-ease), box-shadow var(--lw-ease);
+}
+
+.lw-check__box::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1.5px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--lw-cream);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0.6);
+  opacity: 0;
+  transition: opacity var(--lw-ease), transform var(--lw-ease);
+}
+
+.lw-check:hover .lw-check__box {
+  border-color: var(--lw-navy);
+}
+
+.lw-check__input:checked + .lw-check__box {
+  background: var(--lw-navy);
+  border-color: var(--lw-navy);
+}
+
+.lw-check__input:checked + .lw-check__box::after {
+  opacity: 1;
+  transform: rotate(45deg) scale(1);
+}
+
+.lw-check__input:focus-visible + .lw-check__box {
+  box-shadow: 0 0 0 3px var(--lw-cream), 0 0 0 5px var(--lw-gold);
+}
+
+/* ---------- Liên kết ---------- */
+
+.lw-link {
+  color: var(--lw-navy);
+  font-size: 14.5px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: rgba(201, 169, 110, 0.7);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  border-radius: 3px;
+  transition: color var(--lw-ease), text-decoration-color var(--lw-ease);
+}
+
+.lw-link:hover {
+  color: var(--lw-gold-text);
+  text-decoration-color: currentColor;
+}
+
+.lw-link:focus-visible,
+.lw-auth__back:focus-visible {
+  outline: 2px solid var(--lw-gold);
+  outline-offset: 3px;
+}
+
+.lw-link--strong {
+  font-weight: 600;
+  font-size: inherit;
+}
+
+/* ---------- Nút chính ---------- */
+
+.lw-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 52px;
+  margin: 0;
+  padding: 0 20px;
+  border: 1px solid var(--lw-navy);
+  border-radius: var(--lw-radius);
+  background: var(--lw-navy);
+  color: var(--lw-white);
+  font: inherit;
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background-color var(--lw-ease), border-color var(--lw-ease), color var(--lw-ease), box-shadow var(--lw-ease);
+}
+
+.lw-button:hover {
+  background: var(--lw-gold);
+  border-color: var(--lw-gold);
+  color: var(--lw-navy);
+}
+
+.lw-button:focus-visible {
+  outline: 2px solid var(--lw-gold);
+  outline-offset: 3px;
+}
+
+.lw-button:active {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.lw-button__spinner,
+.lw-button__check {
+  display: none;
+}
+
+/* Đang xử lý */
+.lw-button[aria-busy="true"],
+.lw-button[aria-busy="true"]:hover {
+  background: var(--lw-navy-soft);
+  border-color: var(--lw-navy-soft);
+  color: var(--lw-white);
+  cursor: progress;
+}
+
+.lw-button[aria-busy="true"] .lw-button__spinner {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--lw-white);
+  border-radius: 50%;
+  animation: lw-spin 0.8s linear infinite;
+}
+
+/* Thành công */
+.lw-button.is-success,
+.lw-button.is-success:hover {
+  background: var(--lw-success);
+  border-color: var(--lw-success);
+  color: var(--lw-white);
+  cursor: default;
+}
+
+.lw-button.is-success .lw-button__spinner {
+  display: none;
+}
+
+.lw-button.is-success .lw-button__check {
+  display: block;
+}
+
+@keyframes lw-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.lw-form__status {
+  margin: 12px 0 0;
+  font-size: 13.5px;
+  text-align: center;
+  color: var(--lw-muted);
+}
+
+.lw-form__status:empty {
+  display: none;
+}
+
+.lw-form__note,
+.lw-form__legal {
+  margin: 0 0 20px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--lw-muted);
+}
+
+.lw-form__legal:empty {
+  display: none;
+}
+
+.lw-form__legal p {
+  margin: 0;
+}
+
+.lw-form__legal a {
+  color: var(--lw-navy);
+  text-underline-offset: 3px;
+}
+
+/* ---------- Thông báo chung trong form ---------- */
+
+.lw-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 22px;
+  padding: 12px 14px;
+  border: 1px solid rgba(155, 44, 44, 0.24);
+  border-radius: var(--lw-radius);
+  background: var(--lw-error-bg);
+  color: var(--lw-error);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.lw-alert svg {
+  margin-top: 1px;
+}
+
+.lw-alert a {
+  color: inherit;
+  font-weight: 600;
+}
+
+.lw-alert--success {
+  border-color: rgba(46, 107, 79, 0.24);
+  background: var(--lw-success-bg);
+  color: var(--lw-success);
+}
+
+/* ---------- Chuyển trang + quay về ---------- */
+
+.lw-auth__switch {
+  margin: 28px 0 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--lw-line);
+  text-align: center;
+  font-size: 15px;
+  color: var(--lw-muted);
+}
+
+.lw-auth__back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: fit-content;
+  min-height: 44px;
+  margin: 12px auto 0;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--lw-muted);
+  text-decoration: none;
+  transition: color var(--lw-ease);
+}
+
+.lw-auth__back:hover {
+  color: var(--lw-navy);
+}
+
+/* ---------- Tab cách đăng ký ---------- */
+
+.lw-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin: 0 0 24px;
+  padding: 4px;
+  border: 1px solid var(--lw-line);
+  border-radius: 12px;
+  background: rgba(19, 35, 47, 0.04);
+}
+
+.lw-tabs__tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 9px;
+  color: var(--lw-muted);
+  font-size: 14.5px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color var(--lw-ease), color var(--lw-ease), box-shadow var(--lw-ease);
+}
+
+.lw-tabs__tab:hover {
+  color: var(--lw-navy);
+}
+
+.lw-tabs__tab[aria-selected="true"] {
+  background: var(--lw-white);
+  color: var(--lw-navy);
+  box-shadow: 0 1px 2px rgba(19, 35, 47, 0.1), inset 0 -2px 0 var(--lw-gold);
+}
+
+.lw-tabs__tab:focus-visible {
+  outline: 2px solid var(--lw-gold);
+  outline-offset: 1px;
+}
+
+/* ---------- Đăng nhập bằng Google ---------- */
+
+.lw-social {
+  margin-top: 24px;
+}
+
+.lw-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 20px;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lw-muted);
+}
+
+.lw-divider::before,
+.lw-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--lw-line);
+}
+
+.lw-google-slot {
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}
+
+.lw-google-button {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  justify-content: center;
+  color-scheme: light;
+}
+
+.lw-google-form {
+  margin: 0;
+}
+
+.lw-google-form .lw-alert {
+  margin: 16px 0 0;
+}
+
+/* ---------- Template WooCommerce mặc định trong khung (đặt lại mật khẩu, xác nhận) ---------- */
+
+.lw-auth__card .woocommerce-message,
+.lw-auth__card .woocommerce-info,
+.lw-auth__card .woocommerce-error {
+  list-style: none;
+  margin: 0 0 22px;
+  padding: 12px 14px;
+  border-radius: var(--lw-radius);
+  border: 1px solid rgba(46, 107, 79, 0.24);
+  background: var(--lw-success-bg);
+  color: var(--lw-success);
+  font-size: 14px;
+}
+
+.lw-auth__card .woocommerce-error {
+  border-color: rgba(155, 44, 44, 0.24);
+  background: var(--lw-error-bg);
+  color: var(--lw-error);
+}
+
+.lw-auth__card .woocommerce-ResetPassword:not(.lw-form) .form-row {
+  margin: 0 0 20px;
+}
+
+.lw-auth__card .woocommerce-ResetPassword:not(.lw-form) label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.lw-auth__card .woocommerce-ResetPassword:not(.lw-form) .input-text {
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--lw-line);
+  border-radius: var(--lw-radius);
+  background: var(--lw-white);
+  font: inherit;
+  font-size: 16px;
+}
+
+.lw-auth__card .woocommerce-ResetPassword:not(.lw-form) .input-text:focus {
+  outline: none;
+  border-color: var(--lw-gold);
+  box-shadow: 0 0 0 4px rgba(201, 169, 110, 0.22);
+}
+
+.lw-auth__card .woocommerce-ResetPassword:not(.lw-form) .button {
+  width: 100%;
+  height: 52px;
+  border: 0;
+  border-radius: var(--lw-radius);
+  background: var(--lw-navy);
+  color: var(--lw-white);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--lw-ease), color var(--lw-ease);
+}
+
+.lw-auth__card .woocommerce-ResetPassword:not(.lw-form) .button:hover {
+  background: var(--lw-gold);
+  color: var(--lw-navy);
+}
+
+.lw-auth__card .screen-reader-text {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Tablet & mobile: một cột, ảnh nền phía sau toàn bộ nội dung
+   ========================================================================== */
+
+@media (max-width: 900px) {
+  .lw-auth {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 max(20px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(20px, env(safe-area-inset-left));
+  }
+
+  /* Các phần tử con của cột trái tham gia trực tiếp vào bố cục một cột */
+  .lw-auth__visual {
+    display: contents;
+  }
+
+  .lw-auth__media {
+    position: fixed;
+    inset: 0;
+  }
+
+  .lw-auth__media img {
+    object-position: 62% 50%;
+  }
+
+  .lw-auth__media::after {
+    background: linear-gradient(180deg, rgba(19, 35, 47, 0.8) 0%, rgba(19, 35, 47, 0.7) 40%, rgba(19, 35, 47, 0.92) 100%);
+  }
+
+  .lw-auth__brand {
+    align-self: center;
+    margin: max(24px, env(safe-area-inset-top)) 0 0;
+    color: var(--lw-cream);
+  }
+
+  .lw-auth__story {
+    width: 100%;
+    max-width: 480px;
+    margin: 28px 0 24px;
+    color: var(--lw-cream);
+    text-align: center;
+  }
+
+  .lw-auth__eyebrow {
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  .lw-auth__eyebrow::before {
+    display: none;
+  }
+
+  .lw-auth__headline {
+    font-size: clamp(26px, 5vw, 34px);
+  }
+
+  .lw-auth__lede {
+    margin: 12px auto 0;
+    font-size: 15.5px;
+  }
+
+  .lw-auth__benefits {
+    justify-content: center;
+    margin-top: 20px;
+    padding-top: 18px;
+  }
+
+  .lw-auth__benefits li {
+    font-size: 13px;
+  }
+
+  .lw-auth__panel {
+    width: 100%;
+    flex: 1 0 auto;
+    padding: 0;
+    background: transparent;
+  }
+
+  /* Khối nền bán trong suốt sau form để luôn dễ đọc */
+  .lw-auth__card {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 32px 28px 20px;
+    border: 1px solid rgba(247, 244, 238, 0.4);
+    border-radius: 16px;
+    background: rgba(247, 244, 238, 0.97);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+  .lw-auth__head {
+    margin-bottom: 26px;
+  }
+
+  .lw-auth__head::before {
+    margin-bottom: 18px;
+  }
+
+  .lw-auth__legal {
+    margin: 20px 0 96px;
+    color: rgba(247, 244, 238, 0.6);
+  }
+
+  /* Input khi bàn phím bật: chừa khoảng phía trên để không bị che */
+  .lw-field__input {
+    scroll-margin: 96px 0 140px;
+  }
+}
+
+/* Màn hình nhỏ: ẩn mô tả dài và lợi ích */
+@media (max-width: 560px) {
+  .lw-auth__eyebrow,
+  .lw-auth__lede,
+  .lw-auth__benefits {
+    display: none;
+  }
+
+  .lw-auth__story {
+    margin: 18px 0 18px;
+  }
+
+  .lw-auth__headline {
+    font-size: 22px;
+    font-style: italic;
+    color: rgba(247, 244, 238, 0.92);
+  }
+
+  .lw-auth__card {
+    padding: 26px 20px 16px;
+    border-radius: 14px;
+  }
+
+  .lw-auth__title {
+    font-size: 28px;
+  }
+
+  .lw-auth__subtitle {
+    font-size: 15px;
+  }
+
+  .lw-field__input,
+  .lw-button {
+    height: 50px; /* vẫn > 48px tối thiểu */
+  }
+
+  .lw-auth__switch {
+    margin-top: 22px;
+    padding-top: 18px;
+  }
+}
+
+/* Điện thoại xoay ngang / màn hình rất thấp: bỏ hẳn thông điệp */
+@media (max-width: 900px) and (max-height: 560px) {
+  .lw-auth__story {
+    display: none;
+  }
+
+  .lw-auth__brand {
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .lw-auth {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .lw-auth__card {
+    padding: 24px 16px 14px;
+  }
+
+  .lw-form__row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lw-auth *,
+  .lw-auth *::before,
+  .lw-auth *::after {
+    transition-duration: 0.01ms !important;
+  }
+
+  .lw-button[aria-busy="true"] .lw-button__spinner {
+    animation: none;
+    border-top-color: rgba(255, 255, 255, 0.3);
+    border-right-color: var(--lw-white);
+  }
+}
